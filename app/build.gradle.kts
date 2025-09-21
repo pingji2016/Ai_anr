@@ -38,6 +38,8 @@ android {
     }
     buildFeatures {
         compose = true
+        dataBinding = true
+        viewBinding = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -50,8 +52,42 @@ android {
 }
 
 dependencies {
-
+    // Core Android libraries
     implementation(libs.androidx.core.ktx)
+    implementation("androidx.appcompat:appcompat:1.4.2")
+    implementation("com.google.android.material:material:1.6.1")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+
+    // Navigation library
+    val navVersion = "2.4.2"
+    implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
+    implementation("androidx.navigation:navigation-ui-ktx:$navVersion")
+
+    // CameraX core library
+    val cameraxVersion = "1.2.0-alpha02"
+    implementation("androidx.camera:camera-core:$cameraxVersion")
+    implementation("androidx.camera:camera-camera2:$cameraxVersion")
+    implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
+    implementation("androidx.camera:camera-view:$cameraxVersion")
+
+    // WindowManager
+    implementation("androidx.window:window:1.1.0-alpha02")
+
+    // TensorFlow Lite dependencies
+    implementation("org.tensorflow:tensorflow-lite-task-vision:0.4.0")
+    implementation("org.tensorflow:tensorflow-lite-gpu-delegate-plugin:0.4.0")
+    implementation("org.tensorflow:tensorflow-lite-gpu:2.9.0")
+    implementation("org.tensorflow:tensorflow-lite:2.13.0")
+    implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
+
+    // PyTorch dependencies
+    implementation("org.pytorch:pytorch_android:1.12.1")
+    implementation("org.pytorch:pytorch_android_torchvision:1.12.1")
+
+    // Image processing
+    implementation("androidx.exifinterface:exifinterface:1.3.6")
+
+    // Compose dependencies
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
@@ -59,15 +95,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    
-    // Image processing
-    implementation("androidx.exifinterface:exifinterface:1.3.6")
-    
-    // Note: TensorFlow Lite dependencies removed for demo purposes
-    // To use real EfficientNet Lite0 model, add:
-    // implementation("org.tensorflow:tensorflow-lite:2.13.0")
-    // implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
-    
+
+    // Testing dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

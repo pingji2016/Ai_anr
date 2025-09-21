@@ -14,15 +14,13 @@
     ~ See the License for the specific language governing permissions and
     ~ limitations under the License.
 -->
-
 <resources>
-    <!-- TF Branding Orange -->
-    <color name="bounding_box_color">#FF6F00</color>
-    <color name="toolbar_background">#EEEEEE</color>
-    <color name="ic_launcher_background">#FFFFFF</color>
-    <color name="bottom_sheet_background">#EEEEEE</color>
-    <color name="bottom_sheet_text_color">@android:color/black</color>
-    <color name="icActive">#FFFFFFFF</color>
-    <color name="icFocused">#DDFFFFFF</color>
-    <color name="icPressed">#AAFFFFFF</color>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    </style>
+
+    <style name="BottomSheetSpinnerItemStyle" parent="Widget.AppCompat.Light.DropDownItem.Spinner">
+        <item name="android:textSize">@dimen/bottom_sheet_text_size</item>
+    </style>
 </resources>

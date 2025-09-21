@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <style name="Theme.TfDemo" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.TfDemo" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/toolbar_background</item>
+        <item name="colorPrimaryDark">@color/toolbar_background</item>
+        <item name="colorAccent">@color/bounding_box_color</item>
+    </style>
 </resources>
