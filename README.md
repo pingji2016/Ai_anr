@@ -7,6 +7,7 @@
 - [EfficientNet Lite0](https://tfhub.dev/tensorflow/lite-model/efficientnet/lite0/int8/2)
 - [EfficientNet Lite1](https://tfhub.dev/tensorflow/lite-model/efficientnet/lite1/int8/2)
 - [EfficientNet Lite2](https://tfhub.dev/tensorflow/lite-model/efficientnet/lite2/int8/2)
+- [MobileNet V3](https://aihub.qualcomm.com/models/mobilenet_v3_small)
 
 这些模型均在 ImageNet (ILSVRC-2012-CLS) 数据集上训练完成。本说明将指导您在 Android 设备上构建和运行此演示应用。
 
@@ -105,3 +106,7 @@ Ran tool
 4. **推理时间**: 是所有参数综合效果的最终体现
 
 这些控制参数让用户能够根据具体需求（速度优先 vs 精度优先）和应用场景（实时处理 vs 离线分析）来优化模型性能。
+
+1， 比较使用GPU加速和没使用GPU加速的区别
+2， 比较TFLite和PT Mobile区别
+

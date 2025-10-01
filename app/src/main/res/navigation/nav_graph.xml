@@ -3,7 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/permissionsFragment">
+    app:startDestination="@id/demoListFragment">
+
+    <fragment
+        android:id="@+id/demoListFragment"
+        android:name="com.example.tfdemo.fragments.DemoListFragment"
+        android:label="@string/demo_list_title"
+        tools:layout="@layout/fragment_demo_list">
+        <action
+            android:id="@+id/actionDemoListToPermissions"
+            app:destination="@id/permissionsFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/permissionsFragment"

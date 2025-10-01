@@ -3,7 +3,7 @@
     ~
     ~ Licensed under the Apache License, Version 2.0 (the "License");
     ~ you may not use this file except in compliance with the License.
-    ~ You may obtain a copy of the License at
+    ~ you may obtain a copy of the License at
     ~
     ~       http://www.apache.org/licenses/LICENSE-2.0
     ~
@@ -48,4 +48,16 @@
         android:background="@color/bounding_box_color"
         app:layout_anchor="@id/recyclerview_results"
         app:layout_anchorGravity="bottom" />
+
+    <!-- 回退按钮 -->
+    <ImageButton
+        android:id="@+id/btnBack"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_margin="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:contentDescription="@string/back_to_demo_list"
+        app:layout_anchorGravity="top|start" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

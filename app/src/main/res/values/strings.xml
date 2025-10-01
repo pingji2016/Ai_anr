@@ -48,5 +48,15 @@
         <item>EfficientNet Lite0</item>
         <item>EfficientNet Lite1</item>
         <item>EfficientNet Lite2</item>
+        <item>MobileNet V3</item>
     </string-array>
+
+    <!-- Demo List Fragment Strings -->
+    <string name="demo_icon">Demo Icon</string>
+    <string name="demo_list_title">TFLite Demos</string>
+    <string name="image_classification_demo_title">Image Classification</string>
+    <string name="image_classification_demo_description">Real-time image classification using camera</string>
+
+    <!-- Back Button String -->
+    <string name="back_to_demo_list">Back to Demo List</string>
 </resources>

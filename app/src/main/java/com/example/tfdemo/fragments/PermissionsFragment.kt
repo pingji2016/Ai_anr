@@ -3,7 +3,7 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * you may obtain a copy of the License at
  *
  *             http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -20,6 +20,9 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -27,11 +30,13 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import com.example.tfdemo.R
+import com.example.tfdemo.databinding.FragmentPermissionsBinding
 
 private val PERMISSIONS_REQUIRED = arrayOf(Manifest.permission.CAMERA)
 
 class PermissionsFragment : Fragment() {
 
+    private lateinit var binding: FragmentPermissionsBinding
     private val requestPermissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestPermission()
@@ -44,19 +49,28 @@ class PermissionsFragment : Fragment() {
             }
         }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        when {
-            ContextCompat.checkSelfPermission(
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentPermissionsBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        
+        // 检查是否已经有权限，如果有直接导航
+        if (ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                navigateToCamera()
-            }
-            else -> {
-                requestPermissionLauncher.launch(
-                    Manifest.permission.CAMERA
-                )
+            ) == PackageManager.PERMISSION_GRANTED) {
+            navigateToCamera()
+        } else {
+            // 显示权限请求界面，等待用户操作
+            binding.btnRequestPermission.setOnClickListener {
+                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
             }
         }
     }

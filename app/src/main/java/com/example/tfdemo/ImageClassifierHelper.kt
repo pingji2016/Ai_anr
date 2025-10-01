@@ -24,6 +24,7 @@ import android.view.Surface
 import org.tensorflow.lite.gpu.CompatibilityList
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.support.image.ops.NormalizeOp
 import org.tensorflow.lite.support.image.ops.Rot90Op
 import org.tensorflow.lite.task.core.BaseOptions
 import org.tensorflow.lite.task.core.vision.ImageProcessingOptions
@@ -80,6 +81,7 @@ class ImageClassifierHelper(
                 MODEL_EFFICIENTNETV0 -> "efficientnet-lite0.tflite"
                 MODEL_EFFICIENTNETV1 -> "efficientnet-lite1.tflite"
                 MODEL_EFFICIENTNETV2 -> "efficientnet-lite2.tflite"
+                MODEL_MOBILENETV3 -> "mobilenet_v3_small.tflite"
                 else -> "mobilenetv1.tflite"
             }
 
@@ -106,9 +108,14 @@ class ImageClassifierHelper(
         // Create preprocessor for the image.
         // See https://www.tensorflow.org/lite/inference_with_metadata/
         //            lite_support#imageprocessor_architecture
-        val imageProcessor =
-            ImageProcessor.Builder()
-                .build()
+        val imageProcessorBuilder = ImageProcessor.Builder()
+        
+        // 只为MobileNet V3模型添加归一化处理
+        if (currentModel == MODEL_MOBILENETV3) {
+            imageProcessorBuilder.add(NormalizeOp(127.5f, 127.5f)) // 将像素值从[0, 255]归一化到[-1, 1]
+        }
+        
+        val imageProcessor = imageProcessorBuilder.build()
 
         // Preprocess the image and convert it into a TensorImage for classification.
         val tensorImage = imageProcessor.process(TensorImage.fromBitmap(image))
@@ -156,6 +163,7 @@ class ImageClassifierHelper(
         const val MODEL_EFFICIENTNETV0 = 1
         const val MODEL_EFFICIENTNETV1 = 2
         const val MODEL_EFFICIENTNETV2 = 3
+        const val MODEL_MOBILENETV3 = 4
 
         private const val TAG = "ImageClassifierHelper"
     }
