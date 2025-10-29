@@ -31,6 +31,9 @@
         android:label="Camera"
         tools:layout="@layout/fragment_camera">
         <action
+            android:id="@+id/action_cameraFragment_to_demoListFragment"
+            app:destination="@id/demoListFragment" />
+        <action
             android:id="@+id/actionCameraToPermissions"
             app:destination="@id/permissionsFragment" />
     </fragment>

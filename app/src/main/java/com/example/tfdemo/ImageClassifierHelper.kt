@@ -24,7 +24,7 @@ import android.view.Surface
 import org.tensorflow.lite.gpu.CompatibilityList
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
-import org.tensorflow.lite.support.image.ops.NormalizeOp
+//import org.tensorflow.lite.support.image.ops.NormalizeOp
 import org.tensorflow.lite.support.image.ops.Rot90Op
 import org.tensorflow.lite.task.core.BaseOptions
 import org.tensorflow.lite.task.core.vision.ImageProcessingOptions
@@ -111,9 +111,9 @@ class ImageClassifierHelper(
         val imageProcessorBuilder = ImageProcessor.Builder()
         
         // 只为MobileNet V3模型添加归一化处理
-        if (currentModel == MODEL_MOBILENETV3) {
-            imageProcessorBuilder.add(NormalizeOp(127.5f, 127.5f)) // 将像素值从[0, 255]归一化到[-1, 1]
-        }
+//        if (currentModel == MODEL_MOBILENETV3) {
+//            imageProcessorBuilder.add(NormalizeOp(127.5f, 127.5f)) // 将像素值从[0, 255]归一化到[-1, 1]
+//        }
         
         val imageProcessor = imageProcessorBuilder.build()
 
