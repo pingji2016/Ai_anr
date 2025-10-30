@@ -230,7 +230,9 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
 
         // When clicked, change the underlying hardware used for inference. Current options are CPU
         // GPU, and NNAPI
-        fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(0, false)
+        // Default to CPU if GPU not supported
+        val defaultDelegateIndex = if (imageClassifierHelper.isGpuSupportedOnThisDevice()) 0 else 0
+        fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(defaultDelegateIndex, false)
         fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
@@ -239,7 +241,14 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
                     position: Int,
                     id: Long
                 ) {
-                    imageClassifierHelper.currentDelegate = position
+                    // Prevent choosing GPU if not supported
+                    if (position == ImageClassifierHelper.DELEGATE_GPU && !imageClassifierHelper.isGpuSupportedOnThisDevice()) {
+                        Toast.makeText(requireContext(), "GPU not supported on this device", Toast.LENGTH_SHORT).show()
+                        fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(ImageClassifierHelper.DELEGATE_CPU, false)
+                        imageClassifierHelper.currentDelegate = ImageClassifierHelper.DELEGATE_CPU
+                    } else {
+                        imageClassifierHelper.currentDelegate = position
+                    }
                     updateControlsUi()
                 }
 
