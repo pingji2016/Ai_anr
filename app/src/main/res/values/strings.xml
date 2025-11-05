@@ -56,6 +56,8 @@
     <string name="demo_list_title">TFLite Demos</string>
     <string name="image_classification_demo_title">Image Classification</string>
     <string name="image_classification_demo_description">Real-time image classification using camera</string>
+    <string name="migrate_demo_title">LLM Demo</string>
+    <string name="migrate_demo_description">LLM chat interface with model inference</string>
 
     <!-- Back Button String -->
     <string name="back_to_demo_list">Back to Demo List</string>

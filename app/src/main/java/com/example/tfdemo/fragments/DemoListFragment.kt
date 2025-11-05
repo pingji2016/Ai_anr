@@ -1,5 +1,6 @@
 package com.example.tfdemo.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -35,6 +36,7 @@ class DemoListFragment : Fragment() {
         demoAdapter = DemoAdapter { demoItem ->
             when (demoItem.id) {
                 1 -> navigateToImageClassification()
+                2 -> navigateToMigrateMainActivity()
                 // 可以添加更多demo的导航逻辑
             }
         }
@@ -51,6 +53,22 @@ class DemoListFragment : Fragment() {
         findNavController().navigate(R.id.actionDemoListToPermissions)
     }
 
+    private fun navigateToMigrateMainActivity() {
+        try {
+            val intent = Intent().apply {
+                setClassName(
+                    "com.example.executorchllamademo",
+                    "com.example.executorchllamademo.MainActivity"
+                )
+            }
+            startActivity(intent)
+        } catch (e: Exception) {
+            // 如果无法启动Activity，可能是模块未正确配置
+            // 可以在这里添加错误处理，比如显示Toast
+            android.util.Log.e("DemoListFragment", "Failed to launch migrate MainActivity", e)
+        }
+    }
+
     private fun getDemoItems(): List<DemoItem> {
         return listOf(
             DemoItem(
@@ -58,6 +76,12 @@ class DemoListFragment : Fragment() {
                 title = getString(R.string.image_classification_demo_title),
                 description = getString(R.string.image_classification_demo_description),
                 iconResId = android.R.drawable.ic_menu_camera
+            ),
+            DemoItem(
+                id = 2,
+                title = getString(R.string.migrate_demo_title),
+                description = getString(R.string.migrate_demo_description),
+                iconResId = android.R.drawable.ic_menu_edit
             )
             // 可以添加更多demo项
         )
