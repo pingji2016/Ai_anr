@@ -3,6 +3,29 @@
 ### 概述
 
 这是一款相机应用程序，能够持续对设备后置摄像头拍摄的画面中的物体进行分类识别。该应用支持使用以下量化模型：
+
+## 项目模块说明
+
+本项目包含两个主要模块：
+
+1. **app 模块**：TensorFlow Lite 图像分类演示应用（当前模块）
+   - 支持实时摄像头图像分类
+   - 支持从相册选择图片进行识别
+   - 支持多种预训练模型（MobileNet V1/V3、EfficientNet Lite0/1/2）
+
+2. **migrate 模块**：ExecuTorch LLM 演示应用
+   - 基于 ExecuTorch 的大型语言模型（LLM）演示
+   - 支持多种 LLM 模型（Llama、Qwen、Gemma、Voxtral 等）
+   - 支持文本和视觉模型推理
+   - 详细使用说明请参考：[migrate/README.md](migrate/README.md)
+
+在应用主界面的 Demo 列表中，您可以点击"LLM Demo"项进入 migrate 模块的 LLM 演示功能。
+
+---
+
+## 图像分类功能
+
+该应用支持使用以下量化模型：
 - [MobileNet V1](https://tfhub.dev/tensorflow/lite-model/mobilenet_v1_1.0_224_quantized/1/metadata/1)
 - [EfficientNet Lite0](https://tfhub.dev/tensorflow/lite-model/efficientnet/lite0/int8/2)
 - [EfficientNet Lite1](https://tfhub.dev/tensorflow/lite-model/efficientnet/lite1/int8/2)
