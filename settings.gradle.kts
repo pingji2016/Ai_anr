@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "tfDemo"
 include(":app")
 include(":migrate")
+include(":dl3")

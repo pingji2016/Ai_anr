@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -60,12 +61,25 @@ class DemoListFragment : Fragment() {
                     "com.example.executorchllamademo",
                     "com.example.executorchllamademo.MainActivity"
                 )
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
             startActivity(intent)
-        } catch (e: Exception) {
-            // 如果无法启动Activity，可能是模块未正确配置
-            // 可以在这里添加错误处理，比如显示Toast
+        } catch (e: android.content.ActivityNotFoundException) {
+            // 如果无法找到Activity，显示错误提示
             android.util.Log.e("DemoListFragment", "Failed to launch migrate MainActivity", e)
+            Toast.makeText(
+                requireContext(),
+                "无法启动 LLM Demo，请确保 migrate 模块已正确配置",
+                Toast.LENGTH_SHORT
+            ).show()
+        } catch (e: Exception) {
+            // 其他异常处理
+            android.util.Log.e("DemoListFragment", "Failed to launch migrate MainActivity", e)
+            Toast.makeText(
+                requireContext(),
+                "启动 LLM Demo 时发生错误: ${e.message}",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
