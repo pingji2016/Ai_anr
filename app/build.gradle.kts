@@ -3,6 +3,10 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
 }
 
+configurations.all {
+    exclude(group = "com.facebook.fbjni", module = "fbjni-java-only")
+}
+
 android {
     namespace = "com.example.tfdemo"
     compileSdk = 34
@@ -47,6 +51,10 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+        jniLibs {
+            pickFirsts += "**/libc++_shared.so"
+            pickFirsts += "**/libfbjni.so"
         }
     }
 }
@@ -95,9 +103,6 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-
-    // Migrate module dependency
-    implementation(project(":migrate"))
 
     // Testing dependencies
     testImplementation(libs.junit)

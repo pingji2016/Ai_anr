@@ -23,3 +23,4 @@ rootProject.name = "tfDemo"
 include(":app")
 include(":migrate")
 include(":dl3")
+include(":cifar10")

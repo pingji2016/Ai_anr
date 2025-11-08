@@ -58,6 +58,8 @@
     <string name="image_classification_demo_description">Real-time image classification using camera</string>
     <string name="migrate_demo_title">LLM Demo</string>
     <string name="migrate_demo_description">LLM chat interface with model inference</string>
+    <string name="cifar10_demo_title">CIFAR-10 Training</string>
+    <string name="cifar10_demo_description">CIFAR-10 model training and evaluation</string>
 
     <!-- Back Button String -->
     <string name="back_to_demo_list">Back to Demo List</string>
