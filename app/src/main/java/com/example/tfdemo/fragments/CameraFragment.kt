@@ -25,6 +25,7 @@ import android.util.Log
 import android.view.*
 import android.widget.AdapterView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Camera
@@ -34,11 +35,14 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.tfdemo.ImageClassifierHelper
 import com.example.tfdemo.R
 import com.example.tfdemo.databinding.FragmentCameraBinding
+import kotlinx.coroutines.launch
 import org.tensorflow.lite.task.vision.classifier.Classifications
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -120,7 +124,43 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
 
         // Attach listeners to UI control widgets
         initBottomSheetControls()
+
+        // 正确注册回退回调，跟随 viewLifecycleOwner 自动移除
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            onBackPressedCallback
+        )
     }
+
+    // 定义回退按键回调
+    private val onBackPressedCallback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            // 在这里处理回退按键事件
+            if (shouldHandleBackPress()) {
+                // 自定义处理逻辑
+                handleCustomBackAction()
+            } else {
+                // 如果不需要处理，可以禁用回调以允许默认行为
+                isEnabled = false
+                requireActivity().onBackPressed()
+                isEnabled = true
+            }
+        }
+    }
+
+    private fun shouldHandleBackPress(): Boolean {
+        // 你的判断逻辑，例如：编辑模式、对话框显示等
+        return true
+    }
+
+    private fun handleCustomBackAction() {
+        lifecycleScope.launchWhenStarted {
+            Navigation.findNavController(requireActivity(), R.id.fragment_container).navigate(
+                R.id.action_cameraFragment_to_demoListFragment
+            )
+        }
+    }
+
 
     // Initialize CameraX, and prepare to bind the camera use cases
     private fun setUpCamera() {
@@ -190,7 +230,9 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
 
         // When clicked, change the underlying hardware used for inference. Current options are CPU
         // GPU, and NNAPI
-        fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(0, false)
+        // Default to CPU if GPU not supported
+        val defaultDelegateIndex = if (imageClassifierHelper.isGpuSupportedOnThisDevice()) 0 else 0
+        fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(defaultDelegateIndex, false)
         fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
@@ -199,7 +241,14 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
                     position: Int,
                     id: Long
                 ) {
-                    imageClassifierHelper.currentDelegate = position
+                    // Prevent choosing GPU if not supported
+                    if (position == ImageClassifierHelper.DELEGATE_GPU && !imageClassifierHelper.isGpuSupportedOnThisDevice()) {
+                        Toast.makeText(requireContext(), "GPU not supported on this device", Toast.LENGTH_SHORT).show()
+                        fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(ImageClassifierHelper.DELEGATE_CPU, false)
+                        imageClassifierHelper.currentDelegate = ImageClassifierHelper.DELEGATE_CPU
+                    } else {
+                        imageClassifierHelper.currentDelegate = position
+                    }
                     updateControlsUi()
                 }
 
@@ -345,12 +394,16 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
         results: List<Classifications>?,
         inferenceTime: Long
     ) {
-        activity?.runOnUiThread {
-            // Show result on bottom sheet
-            classificationResultsAdapter.updateResults(results)
-            classificationResultsAdapter.notifyDataSetChanged()
-            fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
-                String.format("%d ms", inferenceTime)
+        if (!isAdded) return
+        viewLifecycleOwner.lifecycleScope.launch {
+            if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                _fragmentCameraBinding?.let { binding ->
+                    classificationResultsAdapter.updateResults(results)
+                    classificationResultsAdapter.notifyDataSetChanged()
+                    binding.bottomSheetLayout.inferenceTimeVal.text =
+                        String.format("%d ms", inferenceTime)
+                }
+            }
         }
     }
 }

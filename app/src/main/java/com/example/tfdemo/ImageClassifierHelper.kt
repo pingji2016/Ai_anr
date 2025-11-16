@@ -24,7 +24,7 @@ import android.view.Surface
 import org.tensorflow.lite.gpu.CompatibilityList
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
-import org.tensorflow.lite.support.image.ops.NormalizeOp
+//import org.tensorflow.lite.support.image.ops.NormalizeOp
 import org.tensorflow.lite.support.image.ops.Rot90Op
 import org.tensorflow.lite.task.core.BaseOptions
 import org.tensorflow.lite.task.core.vision.ImageProcessingOptions
@@ -65,7 +65,9 @@ class ImageClassifierHelper(
                 if (CompatibilityList().isDelegateSupportedOnThisDevice) {
                     baseOptionsBuilder.useGpu()
                 } else {
-                    imageClassifierListener?.onError("GPU is not supported on this device")
+                    imageClassifierListener?.onError("GPU is not supported on this device; falling back to CPU")
+                    // Fallback to CPU to keep the app working
+                    currentDelegate = DELEGATE_CPU
                 }
             }
             DELEGATE_NNAPI -> {
@@ -89,10 +91,24 @@ class ImageClassifierHelper(
             imageClassifier =
                 ImageClassifier.createFromFileAndOptions(context, modelName, optionsBuilder.build())
         } catch (e: IllegalStateException) {
-            imageClassifierListener?.onError(
-                "Image classifier failed to initialize. See error logs for details"
-            )
             Log.e(TAG, "TFLite failed to load model with error: " + e.message)
+            // If init failed under GPU, fallback to CPU and retry once
+            if (currentDelegate == DELEGATE_GPU) {
+                imageClassifierListener?.onError("Failed to initialize with GPU; falling back to CPU")
+                currentDelegate = DELEGATE_CPU
+                val cpuOptions = BaseOptions.builder().setNumThreads(numThreads).build()
+                val retryOptions = optionsBuilder.setBaseOptions(cpuOptions).build()
+                try {
+                    imageClassifier = ImageClassifier.createFromFileAndOptions(context, modelName, retryOptions)
+                } catch (e2: IllegalStateException) {
+                    imageClassifierListener?.onError("Image classifier failed to initialize. See error logs for details")
+                    Log.e(TAG, "Retry with CPU also failed: " + e2.message)
+                }
+            } else {
+                imageClassifierListener?.onError(
+                    "Image classifier failed to initialize. See error logs for details"
+                )
+            }
         }
     }
 
@@ -111,9 +127,9 @@ class ImageClassifierHelper(
         val imageProcessorBuilder = ImageProcessor.Builder()
         
         // 只为MobileNet V3模型添加归一化处理
-        if (currentModel == MODEL_MOBILENETV3) {
-            imageProcessorBuilder.add(NormalizeOp(127.5f, 127.5f)) // 将像素值从[0, 255]归一化到[-1, 1]
-        }
+//        if (currentModel == MODEL_MOBILENETV3) {
+//            imageProcessorBuilder.add(NormalizeOp(127.5f, 127.5f)) // 将像素值从[0, 255]归一化到[-1, 1]
+//        }
         
         val imageProcessor = imageProcessorBuilder.build()
 
@@ -166,5 +182,13 @@ class ImageClassifierHelper(
         const val MODEL_MOBILENETV3 = 4
 
         private const val TAG = "ImageClassifierHelper"
+    }
+
+    fun isGpuSupportedOnThisDevice(): Boolean {
+        return try {
+            CompatibilityList().isDelegateSupportedOnThisDevice
+        } catch (e: Exception) {
+            false
+        }
     }
 }

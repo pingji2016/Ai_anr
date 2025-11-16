@@ -1,9 +1,11 @@
 package com.example.tfdemo.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,6 +37,8 @@ class DemoListFragment : Fragment() {
         demoAdapter = DemoAdapter { demoItem ->
             when (demoItem.id) {
                 1 -> navigateToImageClassification()
+                2 -> navigateToMigrateMainActivity()
+                3 -> navigateToCifar10MainActivity()
                 // 可以添加更多demo的导航逻辑
             }
         }
@@ -51,6 +55,64 @@ class DemoListFragment : Fragment() {
         findNavController().navigate(R.id.actionDemoListToPermissions)
     }
 
+    private fun navigateToMigrateMainActivity() {
+        try {
+            val intent = Intent().apply {
+                setClassName(
+                    "com.example.executorchllamademo",
+                    "com.example.executorchllamademo.MainActivity"
+                )
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            startActivity(intent)
+        } catch (e: android.content.ActivityNotFoundException) {
+            // 如果无法找到Activity，显示错误提示
+            android.util.Log.e("DemoListFragment", "Failed to launch migrate MainActivity", e)
+            Toast.makeText(
+                requireContext(),
+                "无法启动 LLM Demo，请确保 migrate 模块已正确配置",
+                Toast.LENGTH_SHORT
+            ).show()
+        } catch (e: Exception) {
+            // 其他异常处理
+            android.util.Log.e("DemoListFragment", "Failed to launch migrate MainActivity", e)
+            Toast.makeText(
+                requireContext(),
+                "启动 LLM Demo 时发生错误: ${e.message}",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    private fun navigateToCifar10MainActivity() {
+        try {
+            val intent = Intent().apply {
+                setClassName(
+                    "com.example.democifar10",
+                    "com.example.democifar10.MainActivity"
+                )
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            startActivity(intent)
+        } catch (e: android.content.ActivityNotFoundException) {
+            // 如果无法找到Activity，显示错误提示
+            android.util.Log.e("DemoListFragment", "Failed to launch CIFAR10 MainActivity", e)
+            Toast.makeText(
+                requireContext(),
+                "无法启动 CIFAR10 Demo，请确保 cifar10 模块已正确配置",
+                Toast.LENGTH_SHORT
+            ).show()
+        } catch (e: Exception) {
+            // 其他异常处理
+            android.util.Log.e("DemoListFragment", "Failed to launch CIFAR10 MainActivity", e)
+            Toast.makeText(
+                requireContext(),
+                "启动 CIFAR10 Demo 时发生错误: ${e.message}",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
     private fun getDemoItems(): List<DemoItem> {
         return listOf(
             DemoItem(
@@ -58,6 +120,18 @@ class DemoListFragment : Fragment() {
                 title = getString(R.string.image_classification_demo_title),
                 description = getString(R.string.image_classification_demo_description),
                 iconResId = android.R.drawable.ic_menu_camera
+            ),
+            DemoItem(
+                id = 2,
+                title = getString(R.string.migrate_demo_title),
+                description = getString(R.string.migrate_demo_description),
+                iconResId = android.R.drawable.ic_menu_edit
+            ),
+            DemoItem(
+                id = 3,
+                title = getString(R.string.cifar10_demo_title),
+                description = getString(R.string.cifar10_demo_description),
+                iconResId = android.R.drawable.ic_menu_manage
             )
             // 可以添加更多demo项
         )

@@ -1,0 +1,5 @@
+/build
+/libs
+/assets
+*.trace
+memory-20251109T175139.heapprofd
