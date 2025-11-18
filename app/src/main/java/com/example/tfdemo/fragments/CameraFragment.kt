@@ -87,6 +87,11 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
 
         // Shut down our background executor
         cameraExecutor.shutdown()
+
+        // Release classifier resources
+        if (::imageClassifierHelper.isInitialized) {
+            imageClassifierHelper.close()
+        }
     }
 
     override fun onCreateView(
@@ -377,7 +382,7 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
         image.use { bitmapBuffer.copyPixelsFromBuffer(image.planes[0].buffer) }
 
         // Pass Bitmap and rotation to the image classifier helper for processing and classification
-        imageClassifierHelper.classify(bitmapBuffer, getScreenOrientation())
+        imageClassifierHelper.classify(bitmapBuffer, fragmentCameraBinding.viewFinder.display.rotation)
     }
 
     @SuppressLint("NotifyDataSetChanged")

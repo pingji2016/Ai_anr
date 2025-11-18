@@ -24,7 +24,7 @@ import android.view.Surface
 import org.tensorflow.lite.gpu.CompatibilityList
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
-//import org.tensorflow.lite.support.image.ops.NormalizeOp
+import org.tensorflow.lite.support.image.ops.NormalizeOp
 import org.tensorflow.lite.support.image.ops.Rot90Op
 import org.tensorflow.lite.task.core.BaseOptions
 import org.tensorflow.lite.task.core.vision.ImageProcessingOptions
@@ -41,6 +41,8 @@ class ImageClassifierHelper(
     val imageClassifierListener: ClassifierListener?
 ) {
     private var imageClassifier: ImageClassifier? = null
+    private var imageProcessor: ImageProcessor? = null
+    private var lastProcessorModelIndex: Int = -1
 
     init {
         setupImageClassifier()
@@ -110,6 +112,9 @@ class ImageClassifierHelper(
                 )
             }
         }
+
+        // Ensure image processor is initialized for the current model
+        ensureImageProcessorUpToDate()
     }
 
     fun classify(image: Bitmap, rotation: Int) {
@@ -121,20 +126,11 @@ class ImageClassifierHelper(
         // process
         var inferenceTime = SystemClock.uptimeMillis()
 
-        // Create preprocessor for the image.
-        // See https://www.tensorflow.org/lite/inference_with_metadata/
-        //            lite_support#imageprocessor_architecture
-        val imageProcessorBuilder = ImageProcessor.Builder()
-        
-        // 只为MobileNet V3模型添加归一化处理
-//        if (currentModel == MODEL_MOBILENETV3) {
-//            imageProcessorBuilder.add(NormalizeOp(127.5f, 127.5f)) // 将像素值从[0, 255]归一化到[-1, 1]
-//        }
-        
-        val imageProcessor = imageProcessorBuilder.build()
+        // Lazily build and cache the image processor
+        ensureImageProcessorUpToDate()
 
         // Preprocess the image and convert it into a TensorImage for classification.
-        val tensorImage = imageProcessor.process(TensorImage.fromBitmap(image))
+        val tensorImage = imageProcessor!!.process(TensorImage.fromBitmap(image))
 
         val imageProcessingOptions = ImageProcessingOptions.builder()
             .setOrientation(getOrientationFromRotation(rotation))
@@ -190,5 +186,25 @@ class ImageClassifierHelper(
         } catch (e: Exception) {
             false
         }
+    }
+
+    private fun ensureImageProcessorUpToDate() {
+        if (imageProcessor == null || lastProcessorModelIndex != currentModel) {
+            val builder = ImageProcessor.Builder()
+            if (currentModel == MODEL_MOBILENETV3) {
+                builder.add(NormalizeOp(127.5f, 127.5f))
+            }
+            imageProcessor = builder.build()
+            lastProcessorModelIndex = currentModel
+        }
+    }
+
+    fun close() {
+        try {
+            imageClassifier?.close()
+        } catch (_: Exception) {
+        }
+        imageClassifier = null
+        imageProcessor = null
     }
 }
