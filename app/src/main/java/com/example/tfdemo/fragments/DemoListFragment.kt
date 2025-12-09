@@ -39,6 +39,7 @@ class DemoListFragment : Fragment() {
                 1 -> navigateToImageClassification()
                 2 -> navigateToMigrateMainActivity()
                 3 -> navigateToCifar10MainActivity()
+                4 -> navigateToGyroMainActivity()
                 // 可以添加更多demo的导航逻辑
             }
         }
@@ -113,6 +114,33 @@ class DemoListFragment : Fragment() {
         }
     }
 
+    private fun navigateToGyroMainActivity() {
+        try {
+            val intent = Intent().apply {
+                setClassName(
+                    "com.example.gyro",
+                    "com.example.gyro.MainActivity"
+                )
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            startActivity(intent)
+        } catch (e: android.content.ActivityNotFoundException) {
+            android.util.Log.e("DemoListFragment", "Failed to launch Gyro MainActivity", e)
+            Toast.makeText(
+                requireContext(),
+                "无法启动 Gyro Demo，请确保 gyro 模块已正确配置",
+                Toast.LENGTH_SHORT
+            ).show()
+        } catch (e: Exception) {
+            android.util.Log.e("DemoListFragment", "Failed to launch Gyro MainActivity", e)
+            Toast.makeText(
+                requireContext(),
+                "启动 Gyro Demo 时发生错误: ${e.message}",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
     private fun getDemoItems(): List<DemoItem> {
         return listOf(
             DemoItem(
@@ -132,6 +160,12 @@ class DemoListFragment : Fragment() {
                 title = getString(R.string.cifar10_demo_title),
                 description = getString(R.string.cifar10_demo_description),
                 iconResId = android.R.drawable.ic_menu_manage
+            ),
+            DemoItem(
+                id = 4,
+                title = getString(R.string.gyro_demo_title),
+                description = getString(R.string.gyro_demo_description),
+                iconResId = android.R.drawable.ic_menu_compass
             )
             // 可以添加更多demo项
         )
