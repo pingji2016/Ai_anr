@@ -87,24 +87,18 @@ class DemoListFragment : Fragment() {
 
     private fun navigateToCifar10MainActivity() {
         try {
-            val intent = Intent().apply {
-                setClassName(
-                    "com.example.democifar10",
-                    "com.example.democifar10.MainActivity"
-                )
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            val launchIntent = requireContext().packageManager
+                .getLaunchIntentForPackage("com.example.democifar10")
+            if (launchIntent == null) {
+                Toast.makeText(
+                    requireContext(),
+                    "未检测到 CIFAR10 应用，请先安装/构建并安装 cifar10 模块",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                startActivity(launchIntent)
             }
-            startActivity(intent)
-        } catch (e: android.content.ActivityNotFoundException) {
-            // 如果无法找到Activity，显示错误提示
-            android.util.Log.e("DemoListFragment", "Failed to launch CIFAR10 MainActivity", e)
-            Toast.makeText(
-                requireContext(),
-                "无法启动 CIFAR10 Demo，请确保 cifar10 模块已正确配置",
-                Toast.LENGTH_SHORT
-            ).show()
         } catch (e: Exception) {
-            // 其他异常处理
             android.util.Log.e("DemoListFragment", "Failed to launch CIFAR10 MainActivity", e)
             Toast.makeText(
                 requireContext(),
@@ -115,30 +109,7 @@ class DemoListFragment : Fragment() {
     }
 
     private fun navigateToGyroMainActivity() {
-        try {
-            val intent = Intent().apply {
-                setClassName(
-                    "com.example.gyro",
-                    "com.example.gyro.MainActivity"
-                )
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-            startActivity(intent)
-        } catch (e: android.content.ActivityNotFoundException) {
-            android.util.Log.e("DemoListFragment", "Failed to launch Gyro MainActivity", e)
-            Toast.makeText(
-                requireContext(),
-                "无法启动 Gyro Demo，请确保 gyro 模块已正确配置",
-                Toast.LENGTH_SHORT
-            ).show()
-        } catch (e: Exception) {
-            android.util.Log.e("DemoListFragment", "Failed to launch Gyro MainActivity", e)
-            Toast.makeText(
-                requireContext(),
-                "启动 Gyro Demo 时发生错误: ${e.message}",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
+        findNavController().navigate(R.id.actionDemoListToGyro)
     }
 
     private fun getDemoItems(): List<DemoItem> {

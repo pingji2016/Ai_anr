@@ -13,6 +13,9 @@
         <action
             android:id="@+id/actionDemoListToPermissions"
             app:destination="@id/permissionsFragment" />
+        <action
+            android:id="@+id/actionDemoListToGyro"
+            app:destination="@id/sensorFragment" />
     </fragment>
 
     <fragment
@@ -37,5 +40,11 @@
             android:id="@+id/actionCameraToPermissions"
             app:destination="@id/permissionsFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/sensorFragment"
+        android:name="com.example.tfdemo.fragments.SensorFragment"
+        android:label="@string/gyro_demo_title"
+        tools:layout="@layout/fragment_sensor" />
 
 </navigation>
