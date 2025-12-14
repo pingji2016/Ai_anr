@@ -7,7 +7,7 @@
  */
 
 plugins {
-    alias(libs.plugins.android.application)
+    id("com.android.library")
     alias(libs.plugins.jetbrains.kotlin.android)
 }
 
@@ -16,11 +16,8 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.democifar10"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -64,6 +61,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation("com.facebook.soloader:soloader:0.10.5")
+    implementation("com.facebook.fbjni:fbjni:0.5.1")
+    implementation(files("libs/executorch.aar"))
     // Local executorch.aar dependency (only if present)
     val execuAar = file("libs/executorch.aar")
     if (execuAar.exists()) {

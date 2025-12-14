@@ -16,6 +16,9 @@
         <action
             android:id="@+id/actionDemoListToGyro"
             app:destination="@id/sensorFragment" />
+        <action
+            android:id="@+id/actionDemoListToCifar"
+            app:destination="@id/cifarFragment" />
     </fragment>
 
     <fragment
@@ -46,5 +49,11 @@
         android:name="com.example.tfdemo.fragments.SensorFragment"
         android:label="@string/gyro_demo_title"
         tools:layout="@layout/fragment_sensor" />
+
+    <fragment
+        android:id="@+id/cifarFragment"
+        android:name="com.example.tfdemo.fragments.CifarFragment"
+        android:label="@string/cifar10_demo_title"
+        tools:layout="@layout/fragment_cifar" />
 
 </navigation>

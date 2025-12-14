@@ -86,26 +86,7 @@ class DemoListFragment : Fragment() {
     }
 
     private fun navigateToCifar10MainActivity() {
-        try {
-            val launchIntent = requireContext().packageManager
-                .getLaunchIntentForPackage("com.example.democifar10")
-            if (launchIntent == null) {
-                Toast.makeText(
-                    requireContext(),
-                    "未检测到 CIFAR10 应用，请先安装/构建并安装 cifar10 模块",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                startActivity(launchIntent)
-            }
-        } catch (e: Exception) {
-            android.util.Log.e("DemoListFragment", "Failed to launch CIFAR10 MainActivity", e)
-            Toast.makeText(
-                requireContext(),
-                "启动 CIFAR10 Demo 时发生错误: ${e.message}",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
+        findNavController().navigate(R.id.actionDemoListToCifar)
     }
 
     private fun navigateToGyroMainActivity() {
