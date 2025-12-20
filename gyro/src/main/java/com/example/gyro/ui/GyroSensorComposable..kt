@@ -14,8 +14,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.db.AppDatabase
 import com.example.db.GyroData
+import android.util.Log
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
+
+private const val TAG = "GyroSensor"
 
 @Composable
 fun GyroSensorComposable() {
@@ -37,16 +42,24 @@ fun GyroSensorComposable() {
     var gz by remember { mutableStateOf(0f) }
 
     LaunchedEffect(Unit) {
-        while (isActive) {
-            val timestamp = System.currentTimeMillis() * 1000
-            dao.insert(
-                GyroData(
-                    ax = ax, ay = ay, az = az,
-                    gx = gx, gy = gy, gz = gz,
-                    timestamp = timestamp
-                )
-            )
-            delay(100)
+        withContext(Dispatchers.IO) {
+            Log.d(TAG, "Starting sensor data recording loop")
+            while (isActive) {
+                try {
+                    val timestamp = System.currentTimeMillis() * 1000
+                    dao.insert(
+                        GyroData(
+                            ax = ax, ay = ay, az = az,
+                            gx = gx, gy = gy, gz = gz,
+                            timestamp = timestamp
+                        )
+                    )
+                    Log.v(TAG, "Inserted gyro data at $timestamp")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error inserting data", e)
+                }
+                delay(100)
+            }
         }
     }
 
