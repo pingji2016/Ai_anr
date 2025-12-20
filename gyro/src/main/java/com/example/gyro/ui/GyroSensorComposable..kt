@@ -12,6 +12,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.example.db.AppDatabase
+import com.example.db.GyroData
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 
 @Composable
 fun GyroSensorComposable() {
@@ -21,6 +25,9 @@ fun GyroSensorComposable() {
     }
     val accelerometer = remember { sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) }
     val gyroscope = remember { sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) }
+    
+    val db = remember { AppDatabase.getDatabase(context) }
+    val dao = remember { db.gyroDao() }
 
     var ax by remember { mutableStateOf(0f) }
     var ay by remember { mutableStateOf(0f) }
@@ -28,6 +35,20 @@ fun GyroSensorComposable() {
     var gx by remember { mutableStateOf(0f) }
     var gy by remember { mutableStateOf(0f) }
     var gz by remember { mutableStateOf(0f) }
+
+    LaunchedEffect(Unit) {
+        while (isActive) {
+            val timestamp = System.currentTimeMillis() * 1000
+            dao.insert(
+                GyroData(
+                    ax = ax, ay = ay, az = az,
+                    gx = gx, gy = gy, gz = gz,
+                    timestamp = timestamp
+                )
+            )
+            delay(100)
+        }
+    }
 
     DisposableEffect(accelerometer, gyroscope) {
         val listener = object : SensorEventListener {
