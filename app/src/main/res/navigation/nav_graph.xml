@@ -19,7 +19,16 @@
         <action
             android:id="@+id/actionDemoListToCifar"
             app:destination="@id/cifarFragment" />
+        <action
+            android:id="@+id/actionDemoListToDownload"
+            app:destination="@id/downloadFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/downloadFragment"
+        android:name="com.example.tfdemo.fragments.DownloadFragment"
+        android:label="Download Demo"
+        tools:layout="@layout/fragment_download" />
 
     <fragment
         android:id="@+id/permissionsFragment"

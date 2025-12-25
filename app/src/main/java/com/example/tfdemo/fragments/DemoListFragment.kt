@@ -40,6 +40,7 @@ class DemoListFragment : Fragment() {
                 2 -> navigateToMigrateMainActivity()
                 3 -> navigateToCifar10MainActivity()
                 4 -> navigateToGyroMainActivity()
+                5 -> navigateToDownload()
                 // 可以添加更多demo的导航逻辑
             }
         }
@@ -93,6 +94,10 @@ class DemoListFragment : Fragment() {
         findNavController().navigate(R.id.actionDemoListToGyro)
     }
 
+    private fun navigateToDownload() {
+        findNavController().navigate(R.id.actionDemoListToDownload)
+    }
+
     private fun getDemoItems(): List<DemoItem> {
         return listOf(
             DemoItem(
@@ -118,6 +123,12 @@ class DemoListFragment : Fragment() {
                 title = getString(R.string.gyro_demo_title),
                 description = getString(R.string.gyro_demo_description),
                 iconResId = android.R.drawable.ic_menu_compass
+            ),
+            DemoItem(
+                id = 5,
+                title = "Network Download",
+                description = "Multi-thread download demo",
+                iconResId = android.R.drawable.stat_sys_download
             )
             // 可以添加更多demo项
         )
