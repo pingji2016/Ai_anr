@@ -24,6 +24,7 @@ class DownloadFragment : Fragment() {
 
     private lateinit var etUrl: EditText
     private lateinit var btnDownload: Button
+    private lateinit var btnClearFiles: Button
     private lateinit var rvDownloads: RecyclerView
     private lateinit var spinnerUrl: Spinner
     private lateinit var adapter: DownloadAdapter
@@ -49,6 +50,7 @@ class DownloadFragment : Fragment() {
 
         etUrl = view.findViewById(R.id.et_url)
         btnDownload = view.findViewById(R.id.btn_download)
+        btnClearFiles = view.findViewById(R.id.btn_clear_files)
         rvDownloads = view.findViewById(R.id.rv_downloads)
         spinnerUrl = view.findViewById(R.id.spinner_url)
 
@@ -63,6 +65,28 @@ class DownloadFragment : Fragment() {
             } else {
                 Toast.makeText(requireContext(), "Please enter a URL", Toast.LENGTH_SHORT).show()
             }
+        }
+
+        btnClearFiles.setOnClickListener {
+            clearDownloadedFiles()
+        }
+    }
+
+    private fun clearDownloadedFiles() {
+        val saveDir = requireContext().getExternalFilesDir(null)
+        if (saveDir != null && saveDir.exists()) {
+            val files = saveDir.listFiles()
+            if (files != null) {
+                var deletedCount = 0
+                for (file in files) {
+                    if (file.delete()) {
+                        deletedCount++
+                    }
+                }
+                Toast.makeText(requireContext(), "Cleared $deletedCount files", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+             Toast.makeText(requireContext(), "Directory not found", Toast.LENGTH_SHORT).show()
         }
     }
 
