@@ -26,8 +26,10 @@ class DownloadFragment : Fragment() {
     private lateinit var btnDownload: Button
     private lateinit var btnClearFiles: Button
     private lateinit var rvDownloads: RecyclerView
+    private lateinit var rvLocalFiles: RecyclerView
     private lateinit var spinnerUrl: Spinner
     private lateinit var adapter: DownloadAdapter
+    private lateinit var localFileAdapter: LocalFileAdapter
 
     private val presetUrls = listOf(
         "https://zhaofm.xyz/",
@@ -52,10 +54,12 @@ class DownloadFragment : Fragment() {
         btnDownload = view.findViewById(R.id.btn_download)
         btnClearFiles = view.findViewById(R.id.btn_clear_files)
         rvDownloads = view.findViewById(R.id.rv_downloads)
+        rvLocalFiles = view.findViewById(R.id.rv_local_files)
         spinnerUrl = view.findViewById(R.id.spinner_url)
 
-        setupRecyclerView()
+        setupRecyclerViews()
         setupSpinner()
+        loadLocalFiles()
 
         btnDownload.setOnClickListener {
             val url = etUrl.text.toString().trim()
@@ -84,6 +88,7 @@ class DownloadFragment : Fragment() {
                     }
                 }
                 Toast.makeText(requireContext(), "Cleared $deletedCount files", Toast.LENGTH_SHORT).show()
+                loadLocalFiles()
             }
         } else {
              Toast.makeText(requireContext(), "Directory not found", Toast.LENGTH_SHORT).show()
@@ -104,10 +109,24 @@ class DownloadFragment : Fragment() {
         }
     }
 
-    private fun setupRecyclerView() {
+    private fun setupRecyclerViews() {
         adapter = DownloadAdapter()
         rvDownloads.layoutManager = LinearLayoutManager(requireContext())
         rvDownloads.adapter = adapter
+
+        localFileAdapter = LocalFileAdapter()
+        rvLocalFiles.layoutManager = LinearLayoutManager(requireContext())
+        rvLocalFiles.adapter = localFileAdapter
+    }
+
+    private fun loadLocalFiles() {
+        val saveDir = requireContext().getExternalFilesDir(null)
+        if (saveDir != null && saveDir.exists()) {
+            val files = saveDir.listFiles()?.toList()?.sortedByDescending { it.lastModified() } ?: emptyList()
+            localFileAdapter.setFiles(files)
+        } else {
+            localFileAdapter.setFiles(emptyList())
+        }
     }
 
     private fun startDownload(url: String) {
@@ -142,6 +161,7 @@ class DownloadFragment : Fragment() {
                     val fileName = File(path).name
                     adapter.updateTask(url, progress = 100, status = "Completed", fileName = fileName, speed = 0)
                     Toast.makeText(requireContext(), "Download Complete: $fileName", Toast.LENGTH_SHORT).show()
+                    loadLocalFiles()
                 }
             }
 
