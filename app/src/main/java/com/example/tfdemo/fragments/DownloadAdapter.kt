@@ -27,6 +27,11 @@ class DownloadAdapter : RecyclerView.Adapter<DownloadAdapter.ViewHolder>() {
         notifyItemInserted(0)
     }
 
+    fun clearTasks() {
+        tasks.clear()
+        notifyDataSetChanged()
+    }
+
     fun updateTask(url: String, progress: Int? = null, status: String? = null, fileName: String? = null, currentSize: Long? = null, totalSize: Long? = null, speed: Long? = null) {
         val index = tasks.indexOfFirst { it.url == url }
         if (index != -1) {

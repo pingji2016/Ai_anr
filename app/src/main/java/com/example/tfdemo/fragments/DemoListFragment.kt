@@ -128,7 +128,7 @@ class DemoListFragment : Fragment() {
                 id = 5,
                 title = "Network Download",
                 description = "Multi-thread download demo",
-                iconResId = android.R.drawable.stat_sys_download
+                iconResId = com.example.tfdemo.R.drawable.ic_download
             )
             // 可以添加更多demo项
         )

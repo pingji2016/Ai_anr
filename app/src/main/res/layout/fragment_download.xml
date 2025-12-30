@@ -38,12 +38,28 @@
                 android:text="Download" />
         </LinearLayout>
 
-        <Button
-            android:id="@+id/btn_clear_files"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Clear All Downloaded Files"
-            android:layout_marginTop="8dp" />
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/btn_clear_tasks"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Clear Logs"
+                android:layout_marginEnd="4dp"/>
+
+            <Button
+                android:id="@+id/btn_clear_files"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Clear Files"
+                android:layout_marginStart="4dp"/>
+        </LinearLayout>
     </LinearLayout>
 
     <TextView

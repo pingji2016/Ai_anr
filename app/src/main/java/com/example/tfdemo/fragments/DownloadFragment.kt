@@ -24,6 +24,7 @@ class DownloadFragment : Fragment() {
 
     private lateinit var etUrl: EditText
     private lateinit var btnDownload: Button
+    private lateinit var btnClearTasks: Button
     private lateinit var btnClearFiles: Button
     private lateinit var rvDownloads: RecyclerView
     private lateinit var rvLocalFiles: RecyclerView
@@ -52,6 +53,7 @@ class DownloadFragment : Fragment() {
 
         etUrl = view.findViewById(R.id.et_url)
         btnDownload = view.findViewById(R.id.btn_download)
+        btnClearTasks = view.findViewById(R.id.btn_clear_tasks)
         btnClearFiles = view.findViewById(R.id.btn_clear_files)
         rvDownloads = view.findViewById(R.id.rv_downloads)
         rvLocalFiles = view.findViewById(R.id.rv_local_files)
@@ -69,6 +71,10 @@ class DownloadFragment : Fragment() {
             } else {
                 Toast.makeText(requireContext(), "Please enter a URL", Toast.LENGTH_SHORT).show()
             }
+        }
+
+        btnClearTasks.setOnClickListener {
+            adapter.clearTasks()
         }
 
         btnClearFiles.setOnClickListener {
@@ -114,7 +120,14 @@ class DownloadFragment : Fragment() {
         rvDownloads.layoutManager = LinearLayoutManager(requireContext())
         rvDownloads.adapter = adapter
 
-        localFileAdapter = LocalFileAdapter()
+        localFileAdapter = LocalFileAdapter { file ->
+            if (file.delete()) {
+                Toast.makeText(requireContext(), "Deleted: ${file.name}", Toast.LENGTH_SHORT).show()
+                loadLocalFiles()
+            } else {
+                Toast.makeText(requireContext(), "Failed to delete: ${file.name}", Toast.LENGTH_SHORT).show()
+            }
+        }
         rvLocalFiles.layoutManager = LinearLayoutManager(requireContext())
         rvLocalFiles.adapter = localFileAdapter
     }
