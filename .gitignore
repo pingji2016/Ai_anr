@@ -15,4 +15,9 @@
 local.properties
 /.idea/*
 *.tflite
-
+et_env/
+outputs/
+torch_compile_debug/
+*.pt
+*.pth
+*.model

@@ -63,18 +63,8 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation("com.facebook.soloader:soloader:0.10.5")
     implementation("com.facebook.fbjni:fbjni:0.5.1")
-    implementation(files("libs/executorch.aar"))
-    // Local executorch.aar dependency (only if present)
-    val execuAar = file("libs/executorch.aar")
-    if (execuAar.exists()) {
-        implementation(files(execuAar))
-        // Add SoLoader dependency for PyTorch native library loading
-        implementation("com.facebook.soloader:soloader:0.10.5")
-        // Add Facebook JNI dependency required by executorch
-        implementation("com.facebook.fbjni:fbjni:0.5.1")
-    } else {
-        println("[cifar10] Warning: libs/executorch.aar not found, skipping ExecuTorch dependency")
-    }
+    implementation(project(":executorch"))
+    implementation("com.facebook.soloader:soloader:0.10.5")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

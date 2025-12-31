@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">DeepLabV3 Demo</string>
+    <string name="run_model">Run Model</string>
+    <string name="run_xnnpack">Run XNNPACK</string>
+</resources>

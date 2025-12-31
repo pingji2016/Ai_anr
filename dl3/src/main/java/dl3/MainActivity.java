@@ -8,6 +8,7 @@
 
 package dl3;
 
+import org.pytorch.executorchexamples.dl3.R;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;

@@ -22,8 +22,8 @@ dependencyResolutionManagement {
 rootProject.name = "tfDemo"
 include(":app")
 include(":migrate")
-include(":dl3")
 include(":cifar10")
 include(":gyro")
 include(":db")
 include(":net")
+include(":executorch")
