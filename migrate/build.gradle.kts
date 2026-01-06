@@ -7,7 +7,7 @@
  */
 
 plugins {
-    id("com.android.application")
+    id("com.android.library")
     id("org.jetbrains.kotlin.android")
 }
 
@@ -19,21 +19,12 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.executorchllamademo"
         minSdk = 28
         targetSdk = 33
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables { useSupportLibrary = true }
+        consumerProguardFiles("consumer-rules.pro")
         externalNativeBuild { cmake { cppFlags += "" } }
     }
 
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-        }
-    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
