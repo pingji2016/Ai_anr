@@ -54,62 +54,80 @@ class Downloader(
     private var lastProgressBytes = 0L
 
     private fun prepareDownload() {
-        // Connect to get file size
         var fileSize = 0L
         var fileName = config.fileName
-        
-        // ... (connection logic to get size)
-        val conn = URL(config.url).openConnection() as HttpURLConnection
-        conn.connectTimeout = 5000
-        conn.requestMethod = "GET"
-        conn.connect()
-        
-        if (conn.responseCode == HttpURLConnection.HTTP_OK || conn.responseCode == HttpURLConnection.HTTP_PARTIAL) {
-            fileSize = conn.contentLengthLong
-             if (fileSize <= 0) {
-                 notifyFail("Invalid file size")
-                 return
+        var acceptRanges = false
+
+        var conn: HttpURLConnection? = null
+        try {
+            conn = URL(config.url).openConnection() as HttpURLConnection
+            conn.connectTimeout = 10000
+            conn.readTimeout = 15000
+            conn.requestMethod = "HEAD"
+            conn.setRequestProperty("User-Agent", "NetDownloader/1.0")
+            conn.connect()
+
+            if (conn.responseCode in arrayOf(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_PARTIAL)) {
+                fileSize = conn.contentLengthLong
+                acceptRanges = (conn.getHeaderField("Accept-Ranges")?.contains("bytes", true) == true)
             }
-            
-            if (fileName == null) {
-                // Try to get filename from Content-Disposition header first
-                val contentDisposition = conn.getHeaderField("Content-Disposition")
-                if (contentDisposition != null && contentDisposition.contains("filename=")) {
-                     fileName = contentDisposition.split("filename=")[1].replace("\"", "")
+            // Fallback to GET if HEAD doesn't provide size
+            if (fileSize <= 0) {
+                conn.disconnect()
+                conn = URL(config.url).openConnection() as HttpURLConnection
+                conn.connectTimeout = 10000
+                conn.readTimeout = 15000
+                conn.requestMethod = "GET"
+                conn.setRequestProperty("User-Agent", "NetDownloader/1.0")
+                conn.connect()
+                if (conn.responseCode in arrayOf(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_PARTIAL)) {
+                    fileSize = conn.contentLengthLong
+                    acceptRanges = (conn.getHeaderField("Accept-Ranges")?.contains("bytes", true) == true)
                 } else {
-                     fileName = getFileNameFromUrl(config.url)
+                    notifyFail("Connection failed: ${conn.responseCode}")
+                    return
+                }
+            }
+
+            if (fileSize <= 0) {
+                notifyFail("Invalid file size")
+                return
+            }
+
+            if (fileName == null) {
+                val contentDisposition = conn.getHeaderField("Content-Disposition")
+                fileName = if (contentDisposition != null && contentDisposition.contains("filename=")) {
+                    contentDisposition.split("filename=")[1].replace("\"", "")
+                } else {
+                    getFileNameFromUrl(config.url)
                 }
             }
 
             notifyStart(fileSize)
-            
-            val file = File(config.saveDir, fileName!!) // fileName is surely not null here
-            
-            // Setup File
+
+            val file = File(config.saveDir, fileName!!)
             if (!file.parentFile.exists()) file.parentFile.mkdirs()
-            val raf = RandomAccessFile(file, "rw")
-            raf.setLength(fileSize)
-            raf.close()
-            
-            // Calculate chunks
+            RandomAccessFile(file, "rw").use { it.setLength(fileSize) }
+
             val threads = ArrayList<ThreadInfo>()
-            val partSize = fileSize / config.threadNum
-            for (i in 0 until config.threadNum) {
+            val actualThreadNum = if (acceptRanges) config.threadNum.coerceAtLeast(1) else 1
+            val partSize = fileSize / actualThreadNum
+            for (i in 0 until actualThreadNum) {
                 val start = i * partSize
-                val end = if (i == config.threadNum - 1) fileSize - 1 else (i + 1) * partSize - 1
+                val end = if (i == actualThreadNum - 1) fileSize - 1 else (i + 1) * partSize - 1
                 threads.add(ThreadInfo(i, start, end, 0))
             }
-            
+
             downloadInfo = DownloadInfo(config.url, fileName!!, fileSize, 0, threads)
             lastProgressTime = System.currentTimeMillis()
             lastProgressBytes = 0
-            
+
             startMultiThreadDownload(file, threads)
-            
-        } else {
-            notifyFail("Connection failed: ${conn.responseCode}")
+        } catch (e: Exception) {
+            notifyFail(e.message ?: "Unknown error")
+        } finally {
+            try { conn?.disconnect() } catch (_: Exception) {}
         }
-        conn.disconnect()
     }
 
     private fun startMultiThreadDownload(file: File, threads: List<ThreadInfo>) {
@@ -132,39 +150,51 @@ class Downloader(
 
                     val url = URL(config.url)
                     conn = url.openConnection() as HttpURLConnection
-                    conn.connectTimeout = 5000
+                    conn.connectTimeout = 10000
+                    conn.readTimeout = 15000
                     conn.requestMethod = "GET"
                     conn.setRequestProperty("Range", "bytes=$startPos-${info.end}")
+                    conn.setRequestProperty("User-Agent", "NetDownloader/1.0")
                     
                     if (conn.responseCode == HttpURLConnection.HTTP_PARTIAL || conn.responseCode == HttpURLConnection.HTTP_OK) {
                         raf = RandomAccessFile(file, "rw")
                         raf.seek(startPos)
                         
                         input = conn.inputStream
-                        val buffer = ByteArray(4096)
+                        val buffer = ByteArray(16 * 1024)
                         var len = -1
-                        
-                        while (input.read(buffer).also { len = it } != -1) {
+                        var retries = 0
+                        val maxRetries = 3
+                        while (true) {
+                            len = input.read(buffer)
+                            if (len == -1) break
                             if (isPaused || isCanceled) break
-                            
-                            raf.write(buffer, 0, len)
-                            info.current += len
-                            
-                            synchronized(this) {
-                                downloadInfo?.currentLength = downloadInfo?.currentLength?.plus(len) ?: 0
-                                val currentTime = System.currentTimeMillis()
-                                if (currentTime - lastProgressTime >= 1000 || downloadInfo!!.currentLength == downloadInfo!!.totalLength) {
+                            try {
+                                raf.write(buffer, 0, len)
+                                info.current += len
+
+                                synchronized(this) {
+                                    downloadInfo?.currentLength = downloadInfo?.currentLength?.plus(len) ?: 0
+                                    val currentTime = System.currentTimeMillis()
                                     val currentBytes = downloadInfo!!.currentLength
                                     val timeDiff = currentTime - lastProgressTime
                                     val bytesDiff = currentBytes - lastProgressBytes
                                     val speed = if (timeDiff > 0) bytesDiff * 1000 / timeDiff else 0
-                                    
-                                    val progress = if (downloadInfo!!.totalLength > 0) (downloadInfo!!.currentLength * 100 / downloadInfo!!.totalLength).toInt() else 0
-                                    
-                                    notifyProgress(progress, currentBytes, speed)
-                                    
-                                    lastProgressTime = currentTime
-                                    lastProgressBytes = currentBytes
+
+                                    if (timeDiff >= 1000 || currentBytes == downloadInfo!!.totalLength) {
+                                        val progress = if (downloadInfo!!.totalLength > 0) (currentBytes * 100 / downloadInfo!!.totalLength).toInt() else 0
+                                        notifyProgress(progress, currentBytes, speed)
+                                        lastProgressTime = currentTime
+                                        lastProgressBytes = currentBytes
+                                    }
+                                }
+                            } catch (writeEx: Exception) {
+                                if (retries < maxRetries) {
+                                    retries++
+                                    Thread.sleep(500L * retries)
+                                    continue
+                                } else {
+                                    throw writeEx
                                 }
                             }
                         }

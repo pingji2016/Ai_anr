@@ -19,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 
 private const val TAG = "GyroSensor"
 
@@ -33,6 +34,8 @@ fun GyroSensorComposable() {
     
     val db = remember { AppDatabase.getDatabase(context) }
     val dao = remember { db.gyroDao() }
+    val buffer = remember { mutableListOf<GyroData>() }
+    var lastFlushTs by remember { mutableStateOf(System.currentTimeMillis()) }
 
     var ax by remember { mutableStateOf(0f) }
     var ay by remember { mutableStateOf(0f) }
@@ -46,20 +49,43 @@ fun GyroSensorComposable() {
             Log.d(TAG, "Starting sensor data recording loop")
             while (isActive) {
                 try {
-                    val timestamp = System.currentTimeMillis() * 1000
-                    dao.insert(
+                    val tsMs = System.currentTimeMillis()
+                    val timestamp = tsMs * 1000
+                    buffer.add(
                         GyroData(
                             ax = ax, ay = ay, az = az,
                             gx = gx, gy = gy, gz = gz,
                             timestamp = timestamp
                         )
                     )
-                    Log.v(TAG, "Inserted gyro data at $timestamp")
+
+                    val needFlush = buffer.size >= 20 || (tsMs - lastFlushTs) >= 1000
+                    if (needFlush) {
+                        dao.insertAll(buffer.toList())
+                        buffer.clear()
+                        lastFlushTs = tsMs
+                        Log.v(TAG, "Flushed batch to DB")
+                    }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error inserting data", e)
                 }
                 delay(100)
             }
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            try {
+                if (buffer.isNotEmpty()) {
+                    // Flush remaining buffered entries
+                    kotlinx.coroutines.GlobalScope.launch(Dispatchers.IO) {
+                        dao.insertAll(buffer.toList())
+                        buffer.clear()
+                        Log.v(TAG, "Flushed remaining batch on dispose")
+                    }
+                }
+            } catch (_: Exception) {}
         }
     }
 
