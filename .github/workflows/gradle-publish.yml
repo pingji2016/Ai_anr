@@ -27,11 +27,13 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew assembleRelease
 
-    - name: Upload APK
+    - name: Upload APKs (CPU/GPU flavors)
       uses: actions/upload-artifact@v4
       with:
-        name: app-release
-        path: app/build/outputs/apk/release/*.apk
+        name: app-release-flavors
+        path: |
+          app/build/outputs/apk/cpu/release/*.apk
+          app/build/outputs/apk/gpu/release/*.apk
         retention-days: 30
 
     - name: Create Release
@@ -42,6 +44,8 @@ jobs:
         name: Release v1.0.${{ github.run_number }}
         draft: false
         prerelease: false
-        files: app/build/outputs/apk/release/*.apk
+        files: |
+          app/build/outputs/apk/cpu/release/*.apk
+          app/build/outputs/apk/gpu/release/*.apk
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
