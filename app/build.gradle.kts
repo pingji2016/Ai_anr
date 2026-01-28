@@ -22,6 +22,9 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        ndk {
+            abiFilters += listOf("arm64-v8a")
+        }
     }
 
     buildTypes {
@@ -59,6 +62,16 @@ android {
             pickFirsts += "**/libfbjni.so"
         }
     }
+
+    flavorDimensions += listOf("accel")
+    productFlavors {
+        create("cpu") {
+            dimension = "accel"
+        }
+        create("gpu") {
+            dimension = "accel"
+        }
+    }
 }
 
 dependencies {
@@ -85,14 +98,13 @@ dependencies {
 
     // TensorFlow Lite dependencies
     implementation("org.tensorflow:tensorflow-lite-task-vision:0.4.4")
-    implementation("org.tensorflow:tensorflow-lite-gpu-delegate-plugin:0.4.4")
-    implementation("org.tensorflow:tensorflow-lite-gpu:2.14.0")
     implementation("org.tensorflow:tensorflow-lite:2.14.0")
     implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
+    // GPU-only dependencies
+    gpuImplementation("org.tensorflow:tensorflow-lite-gpu-delegate-plugin:0.4.4")
+    gpuImplementation("org.tensorflow:tensorflow-lite-gpu:2.14.0")
 
-    // PyTorch dependencies
-    implementation("org.pytorch:pytorch_android:1.12.1")
-    implementation("org.pytorch:pytorch_android_torchvision:1.12.1")
+    // PyTorch dependencies (removed from app to reduce size; ExecuTorch used in cifar10 module)
 
     // Image processing
     implementation("androidx.exifinterface:exifinterface:1.3.6")
