@@ -24,8 +24,9 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build with Gradle
-      run: ./gradlew assembleRelease
+    - name: Build with Gradle (CPU/GPU APKs + nativecalc SO)
+      run: |
+        ./gradlew :app:assembleCpuRelease :app:assembleGpuRelease :nativecalc:externalNativeBuildDebug
 
     - name: Upload APKs (CPU/GPU flavors)
       uses: actions/upload-artifact@v4
@@ -34,6 +35,15 @@ jobs:
         path: |
           app/build/outputs/apk/cpu/release/*.apk
           app/build/outputs/apk/gpu/release/*.apk
+        retention-days: 30
+
+    - name: Upload nativecalc .so (arm64-v8a)
+      uses: actions/upload-artifact@v4
+      with:
+        name: nativecalc-arm64-so
+        path: |
+          nativecalc/build/intermediates/**/arm64-v8a/libnativecalc.so
+          nativecalc/build/**/obj/arm64-v8a/libnativecalc.so
         retention-days: 30
 
     - name: Create Release

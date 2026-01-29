@@ -41,6 +41,7 @@ class DemoListFragment : Fragment() {
                 3 -> navigateToCifar10MainActivity()
                 4 -> navigateToGyroMainActivity()
                 5 -> navigateToDownload()
+                6 -> navigateToNativeCalcBenchmark()
                 // 可以添加更多demo的导航逻辑
             }
         }
@@ -129,9 +130,19 @@ class DemoListFragment : Fragment() {
                 title = "Network Download",
                 description = "Multi-thread download demo",
                 iconResId = com.example.tfdemo.R.drawable.ic_download
+            ),
+            DemoItem(
+                id = 6,
+                title = "Native Calc Benchmark",
+                description = "Java VS C++ JNI performance",
+                iconResId = android.R.drawable.ic_menu_info_details
             )
             // 可以添加更多demo项
         )
+    }
+
+    private fun navigateToNativeCalcBenchmark() {
+        findNavController().navigate(R.id.actionDemoListToNativeCalcBenchmark)
     }
 
     data class DemoItem(

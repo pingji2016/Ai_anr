@@ -102,9 +102,8 @@ dependencies {
     implementation("org.tensorflow:tensorflow-lite-task-vision:0.4.4")
     implementation("org.tensorflow:tensorflow-lite:2.14.0")
     implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
-    // GPU-only dependencies
-    gpuImplementation("org.tensorflow:tensorflow-lite-gpu-delegate-plugin:0.4.4")
-    gpuImplementation("org.tensorflow:tensorflow-lite-gpu:2.14.0")
+    add("gpuImplementation", "org.tensorflow:tensorflow-lite-gpu-delegate-plugin:0.4.4")
+    add("gpuImplementation", "org.tensorflow:tensorflow-lite-gpu:2.14.0")
 
     // PyTorch dependencies (removed from app to reduce size; ExecuTorch used in cifar10 module)
 
