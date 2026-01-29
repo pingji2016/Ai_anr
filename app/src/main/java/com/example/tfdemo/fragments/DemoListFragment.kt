@@ -42,6 +42,7 @@ class DemoListFragment : Fragment() {
                 4 -> navigateToGyroMainActivity()
                 5 -> navigateToDownload()
                 6 -> navigateToNativeCalcBenchmark()
+                7 -> navigateToImageFlip()
                 // 可以添加更多demo的导航逻辑
             }
         }
@@ -136,6 +137,12 @@ class DemoListFragment : Fragment() {
                 title = "Native Calc Benchmark",
                 description = "Java VS C++ JNI performance",
                 iconResId = android.R.drawable.ic_menu_info_details
+            ),
+            DemoItem(
+                id = 7,
+                title = "Image Flip",
+                description = "Horizontal flip by C++ or Java",
+                iconResId = android.R.drawable.ic_menu_gallery
             )
             // 可以添加更多demo项
         )
@@ -143,6 +150,10 @@ class DemoListFragment : Fragment() {
 
     private fun navigateToNativeCalcBenchmark() {
         findNavController().navigate(R.id.actionDemoListToNativeCalcBenchmark)
+    }
+
+    private fun navigateToImageFlip() {
+        findNavController().navigate(R.id.actionDemoListToImageFlip)
     }
 
     data class DemoItem(

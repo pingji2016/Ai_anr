@@ -25,6 +25,9 @@
         <action
             android:id="@+id/actionDemoListToNativeCalcBenchmark"
             app:destination="@id/nativeCalcBenchmarkFragment" />
+        <action
+            android:id="@+id/actionDemoListToImageFlip"
+            app:destination="@id/imageFlipFragment" />
     </fragment>
 
     <fragment
@@ -73,5 +76,11 @@
         android:name="com.example.tfdemo.fragments.NativeCalcBenchmarkFragment"
         android:label="NativeCalc Benchmark"
         tools:layout="@layout/fragment_native_calc_benchmark" />
+
+    <fragment
+        android:id="@+id/imageFlipFragment"
+        android:name="com.example.tfdemo.fragments.ImageFlipFragment"
+        android:label="Image Flip"
+        tools:layout="@layout/fragment_image_flip" />
 
 </navigation>

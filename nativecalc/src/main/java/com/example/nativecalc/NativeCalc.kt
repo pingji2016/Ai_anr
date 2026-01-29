@@ -5,4 +5,5 @@ object NativeCalc {
     external fun multiply(a: Int, b: Int): Int
     external fun sum(values: FloatArray): Float
     external fun callJavaLog(logger: Logger, msg: String)
+    external fun flipHorizontalBitmap(src: android.graphics.Bitmap): android.graphics.Bitmap
 }

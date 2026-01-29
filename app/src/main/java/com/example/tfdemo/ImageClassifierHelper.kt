@@ -21,7 +21,6 @@ import android.graphics.Bitmap
 import android.os.SystemClock
 import android.util.Log
 import android.view.Surface
-import org.tensorflow.lite.gpu.CompatibilityList
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.Rot90Op
@@ -63,7 +62,7 @@ class ImageClassifierHelper(
                 // Default
             }
             DELEGATE_GPU -> {
-                if (CompatibilityList().isDelegateSupportedOnThisDevice) {
+                if (isGpuSupportedOnThisDevice()) {
                     baseOptionsBuilder.useGpu()
                 } else {
                     imageClassifierListener?.onError("GPU is not supported on this device; falling back to CPU")
@@ -181,7 +180,11 @@ class ImageClassifierHelper(
 
     fun isGpuSupportedOnThisDevice(): Boolean {
         return try {
-            CompatibilityList().isDelegateSupportedOnThisDevice
+            val clazz = Class.forName("org.tensorflow.lite.gpu.CompatibilityList")
+            val ctor = clazz.getConstructor()
+            val instance = ctor.newInstance()
+            val method = clazz.getMethod("isDelegateSupportedOnThisDevice")
+            method.invoke(instance) as Boolean
         } catch (e: Exception) {
             false
         }

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <Button
+        android:id="@+id/btn_run_benchmark"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Run NativeCalc Benchmark" />
+
+    <TextView
+        android:id="@+id/tv_benchmark_result"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:paddingTop="12dp"
+        android:text="Press the button to run benchmark" />
+
+</LinearLayout>
