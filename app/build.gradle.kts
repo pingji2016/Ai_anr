@@ -72,6 +72,8 @@ android {
             dimension = "accel"
         }
     }
+    ndkVersion = "26.2.11394342"
+    buildToolsVersion = "33.0.1"
 }
 
 dependencies {
@@ -119,6 +121,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(project(":cifar10"))
     implementation(project(":gyro"))
+    implementation(project(":nativecalc"))
 
     // Testing dependencies
     testImplementation(libs.junit)
