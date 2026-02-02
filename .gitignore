@@ -21,3 +21,4 @@ torch_compile_debug/
 *.pt
 *.pth
 *.model
+/nativecalc/build/
