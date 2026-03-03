@@ -75,20 +75,10 @@ class ImageFlipFragment : Fragment() {
     }
 
     private fun flipJava(src: Bitmap): Bitmap {
-        val w = src.width
-        val h = src.height
-        val dst = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        val row = IntArray(w)
-        for (y in 0 until h) {
-            src.getPixels(row, 0, w, 0, y, w, 1)
-            for (x in 0 until w / 2) {
-                val t = row[x]
-                row[x] = row[w - 1 - x]
-                row[w - 1 - x] = t
-            }
-            dst.setPixels(row, 0, w, 0, y, w, 1)
+        val matrix = android.graphics.Matrix().apply {
+            postScale(-1f, 1f, src.width / 2f, src.height / 2f)
         }
-        return dst
+        return Bitmap.createBitmap(src, 0, 0, src.width, src.height, matrix, true)
     }
 
     private fun loadBitmap(uri: Uri): Bitmap {

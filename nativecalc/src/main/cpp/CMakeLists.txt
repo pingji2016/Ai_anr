@@ -4,7 +4,10 @@ add_library(nativecalc SHARED nativecalc.cpp)
 target_compile_features(nativecalc PRIVATE cxx_std_17)
 find_library(log-lib log)
 find_library(jni-graphics jnigraphics)
-target_link_libraries(nativecalc ${log-lib} ${jni-graphics})
+
+find_package(OpenMP REQUIRED)
+
+target_link_libraries(nativecalc ${log-lib} ${jni-graphics} OpenMP::OpenMP_CXX)
 
 
 #- $env:JAVA_HOME="C:\Users\pingji\.jdks\jbr-17.0.14"

@@ -85,11 +85,6 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
 
-    // Navigation library
-    val navVersion = "2.4.2"
-    implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
-    implementation("androidx.navigation:navigation-ui-ktx:$navVersion")
-
     // CameraX core library
     val cameraxVersion = "1.2.0-alpha02"
     implementation("androidx.camera:camera-core:$cameraxVersion")
