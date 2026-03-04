@@ -81,31 +81,30 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
 
     // CameraX core library
-    val cameraxVersion = "1.2.0-alpha02"
-    implementation("androidx.camera:camera-core:$cameraxVersion")
-    implementation("androidx.camera:camera-camera2:$cameraxVersion")
-    implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
-    implementation("androidx.camera:camera-view:$cameraxVersion")
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
 
     // WindowManager
-    implementation("androidx.window:window:1.1.0-alpha02")
+    implementation(libs.androidx.window)
 
     // TensorFlow Lite dependencies
-    implementation("org.tensorflow:tensorflow-lite-task-vision:0.4.4")
-    implementation("org.tensorflow:tensorflow-lite:2.14.0")
-    implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
-    add("gpuImplementation", "org.tensorflow:tensorflow-lite-gpu-delegate-plugin:0.4.4")
-    add("gpuImplementation", "org.tensorflow:tensorflow-lite-gpu:2.14.0")
+    implementation(libs.tensorflow.lite.task.vision)
+    implementation(libs.tensorflow.lite)
+    implementation(libs.tensorflow.lite.support)
+    add("gpuImplementation", libs.tensorflow.lite.gpu.delegate.plugin)
+    add("gpuImplementation", libs.tensorflow.lite.gpu)
 
     // PyTorch dependencies (removed from app to reduce size; ExecuTorch used in cifar10 module)
 
     // Image processing
-    implementation("androidx.exifinterface:exifinterface:1.3.6")
+    implementation(libs.androidx.exifinterface)
 
     // Compose dependencies
     implementation(libs.androidx.lifecycle.runtime.ktx)

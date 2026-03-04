@@ -3,6 +3,34 @@
 #include <arm_neon.h>
 #include <omp.h>
 
+// Cache for JNI performance
+static jclass bitmapCls = nullptr;
+static jmethodID createBitmapMethod = nullptr;
+static jobject argb8888Config = nullptr;
+static jmethodID logMethod = nullptr;
+
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
+    JNIEnv* env;
+    if (vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK) return JNI_ERR;
+
+    // Cache Bitmap
+    jclass bCls = env->FindClass("android/graphics/Bitmap");
+    bitmapCls = (jclass)env->NewGlobalRef(bCls);
+    createBitmapMethod = env->GetStaticMethodID(bitmapCls, "createBitmap", "(IILandroid/graphics/Bitmap$Config;)Landroid/graphics/Bitmap;");
+
+    // Cache Config
+    jclass configCls = env->FindClass("android/graphics/Bitmap$Config");
+    jfieldID argb8888Field = env->GetStaticFieldID(configCls, "ARGB_8888", "Landroid/graphics/Bitmap$Config;");
+    jobject localConfig = env->GetStaticObjectField(configCls, argb8888Field);
+    argb8888Config = env->NewGlobalRef(localConfig);
+
+    // Cache Logger
+    jclass loggerCls = env->FindClass("com/example/nativecalc/Logger");
+    logMethod = env->GetMethodID(loggerCls, "log", "(Ljava/lang/String;)V");
+
+    return JNI_VERSION_1_6;
+}
+
 extern "C" JNIEXPORT jint JNICALL
 Java_com_example_nativecalc_NativeCalc_multiply(JNIEnv*, jobject, jint a, jint b) {
     return a * b;
@@ -32,8 +60,6 @@ Java_com_example_nativecalc_NativeCalc_sum(JNIEnv* env, jobject, jfloatArray arr
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_example_nativecalc_NativeCalc_callJavaLog(JNIEnv* env, jobject, jobject logger, jstring msg) {
-    jclass loggerCls = env->GetObjectClass(logger);
-    jmethodID logMethod = env->GetMethodID(loggerCls, "log", "(Ljava/lang/String;)V");
     if (logMethod != nullptr) {
         env->CallVoidMethod(logger, logMethod, msg);
     }
@@ -45,12 +71,7 @@ Java_com_example_nativecalc_NativeCalc_flipHorizontalBitmap(JNIEnv* env, jobject
     if (AndroidBitmap_getInfo(env, srcBitmap, &info) != ANDROID_BITMAP_RESULT_SUCCESS) return nullptr;
     if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) return nullptr;
 
-    jclass bitmapCls = env->FindClass("android/graphics/Bitmap");
-    jclass configCls = env->FindClass("android/graphics/Bitmap$Config");
-    jfieldID argb8888Field = env->GetStaticFieldID(configCls, "ARGB_8888", "Landroid/graphics/Bitmap$Config;");
-    jobject argb8888 = env->GetStaticObjectField(configCls, argb8888Field);
-    jmethodID createBitmap = env->GetStaticMethodID(bitmapCls, "createBitmap", "(IILandroid/graphics/Bitmap$Config;)Landroid/graphics/Bitmap;");
-    jobject dstBitmap = env->CallStaticObjectMethod(bitmapCls, createBitmap, (jint)info.width, (jint)info.height, argb8888);
+    jobject dstBitmap = env->CallStaticObjectMethod(bitmapCls, createBitmapMethod, (jint)info.width, (jint)info.height, argb8888Config);
 
     void* srcPixels = nullptr;
     void* dstPixels = nullptr;
