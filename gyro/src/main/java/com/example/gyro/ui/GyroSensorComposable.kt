@@ -34,15 +34,25 @@ fun GyroSensorComposable() {
     
     val db = remember { AppDatabase.getDatabase(context) }
     val dao = remember { db.gyroDao() }
-    val buffer = remember { mutableListOf<GyroData>() }
-    var lastFlushTs by remember { mutableStateOf(System.currentTimeMillis()) }
+    
+    // Internal refs to store latest sensor data without triggering recomposition
+    val latestAx = remember { mutableFloatStateOf(0f) }
+    val latestAy = remember { mutableFloatStateOf(0f) }
+    val latestAz = remember { mutableFloatStateOf(0f) }
+    val latestGx = remember { mutableFloatStateOf(0f) }
+    val latestGy = remember { mutableFloatStateOf(0f) }
+    val latestGz = remember { mutableFloatStateOf(0f) }
 
-    var ax by remember { mutableStateOf(0f) }
-    var ay by remember { mutableStateOf(0f) }
-    var az by remember { mutableStateOf(0f) }
-    var gx by remember { mutableStateOf(0f) }
-    var gy by remember { mutableStateOf(0f) }
-    var gz by remember { mutableStateOf(0f) }
+    // UI states updated at a lower frequency (e.g. 5Hz) to save power/CPU
+    var displayAx by remember { mutableFloatStateOf(0f) }
+    var displayAy by remember { mutableFloatStateOf(0f) }
+    var displayAz by remember { mutableFloatStateOf(0f) }
+    var displayGx by remember { mutableFloatStateOf(0f) }
+    var displayGy by remember { mutableFloatStateOf(0f) }
+    var displayGz by remember { mutableFloatStateOf(0f) }
+
+    val buffer = remember { mutableListOf<GyroData>() }
+    var lastFlushTs by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
@@ -51,41 +61,52 @@ fun GyroSensorComposable() {
                 try {
                     val tsMs = System.currentTimeMillis()
                     val timestamp = tsMs * 1000
-                    buffer.add(
-                        GyroData(
-                            ax = ax, ay = ay, az = az,
-                            gx = gx, gy = gy, gz = gz,
-                            timestamp = timestamp
-                        )
+                    
+                    val data = GyroData(
+                        ax = latestAx.floatValue, ay = latestAy.floatValue, az = latestAz.floatValue,
+                        gx = latestGx.floatValue, gy = latestGy.floatValue, gz = latestGz.floatValue,
+                        timestamp = timestamp
                     )
+                    buffer.add(data)
+
+                    // Update UI display values at a controlled rate (roughly every 200ms)
+                    withContext(Dispatchers.Main) {
+                        displayAx = data.ax; displayAy = data.ay; displayAz = data.az
+                        displayGx = data.gx; displayGy = data.gy; displayGz = data.gz
+                    }
 
                     val needFlush = buffer.size >= 20 || (tsMs - lastFlushTs) >= 1000
                     if (needFlush) {
-                        dao.insertAll(buffer.toList())
+                        val flushList = buffer.toList()
                         buffer.clear()
+                        dao.insertAll(flushList)
                         lastFlushTs = tsMs
-                        Log.v(TAG, "Flushed batch to DB")
+                        Log.v(TAG, "Flushed ${flushList.size} items to DB")
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error inserting data", e)
+                    Log.e(TAG, "Error in recording loop", e)
                 }
-                delay(100)
+                delay(100) // Record every 100ms
             }
         }
     }
 
     DisposableEffect(Unit) {
         onDispose {
-            try {
-                if (buffer.isNotEmpty()) {
-                    // Flush remaining buffered entries
-                    kotlinx.coroutines.GlobalScope.launch(Dispatchers.IO) {
-                        dao.insertAll(buffer.toList())
-                        buffer.clear()
-                        Log.v(TAG, "Flushed remaining batch on dispose")
+            if (buffer.isNotEmpty()) {
+                val remaining = buffer.toList()
+                buffer.clear()
+                // Use GlobalScope as a last resort to ensure data is saved after composition is destroyed
+                @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
+                kotlinx.coroutines.GlobalScope.launch(Dispatchers.IO) {
+                    try {
+                        dao.insertAll(remaining)
+                        Log.v(TAG, "Final flush of ${remaining.size} items on dispose")
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed final flush", e)
                     }
                 }
-            } catch (_: Exception) {}
+            }
         }
     }
 
@@ -94,28 +115,32 @@ fun GyroSensorComposable() {
             override fun onSensorChanged(event: SensorEvent) {
                 when (event.sensor.type) {
                     Sensor.TYPE_ACCELEROMETER -> {
-                        ax = event.values[0]; ay = event.values[1]; az = event.values[2]
+                        latestAx.floatValue = event.values[0]
+                        latestAy.floatValue = event.values[1]
+                        latestAz.floatValue = event.values[2]
                     }
                     Sensor.TYPE_GYROSCOPE -> {
-                        gx = event.values[0]; gy = event.values[1]; gz = event.values[2]
+                        latestGx.floatValue = event.values[0]
+                        latestGy.floatValue = event.values[1]
+                        latestGz.floatValue = event.values[2]
                     }
                 }
             }
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
         }
-        accelerometer?.let { sensorManager.registerListener(listener, it, SensorManager.SENSOR_DELAY_UI) }
-        gyroscope?.let { sensorManager.registerListener(listener, it, SensorManager.SENSOR_DELAY_UI) }
+        sensorManager.registerListener(listener, accelerometer, SensorManager.SENSOR_DELAY_UI)
+        sensorManager.registerListener(listener, gyroscope, SensorManager.SENSOR_DELAY_UI)
         onDispose { sensorManager.unregisterListener(listener) }
     }
 
     Column(modifier = Modifier.padding(16.dp)) {
-        Text(text = "Accelerometer")
-        Text(text = "x: $ax")
-        Text(text = "y: $ay")
-        Text(text = "z: $az")
+        Text(text = "Accelerometer (Update Rate: 5Hz)")
+        Text(text = "x: ${"%.2f".format(displayAx)}")
+        Text(text = "y: ${"%.2f".format(displayAy)}")
+        Text(text = "z: ${"%.2f".format(displayAz)}")
         Text(text = "Gyroscope")
-        Text(text = "x: $gx")
-        Text(text = "y: $gy")
-        Text(text = "z: $gz")
+        Text(text = "x: ${"%.2f".format(displayGx)}")
+        Text(text = "y: ${"%.2f".format(displayGy)}")
+        Text(text = "z: ${"%.2f".format(displayGz)}")
     }
 }

@@ -1,135 +1,68 @@
-# TensorFlow Lite 图像分类演示应用
+# TensorFlow Lite & ExecuTorch 综合演示应用 (AI_ANR)
 
-### 概述
+本项是一个集成了多种 AI 技术的 Android 演示应用，涵盖了图像分类、大语言模型推理、传感器数据采集、多线程下载以及高性能 JNI 计算。
 
-这是一款相机应用程序，能够持续对设备后置摄像头拍摄的画面中的物体进行分类识别。该应用支持使用以下量化模型：
+## 核心优化与特性
 
-## 项目模块说明
+### 1. 高性能 JNI & SIMD 优化 (nativecalc 模块)
+- **NEON 指令集加速**: 针对像素反转 (`flipHorizontalBitmap`) 和数组求和 (`sum`) 使用了 ARM NEON SIMD 指令集，每次并行处理 128 位数据，显著提升处理速度。
+- **OpenMP 并行处理**: 在 C++ 层开启了 OpenMP 多线程支持，利用多核 CPU 并行处理图像行。
+- **JNI 缓存 (JNI_OnLoad)**: 在库加载时缓存了类引用和方法 ID，减少了频繁调用 JNI 时的查找开销。
+- **JNI_ABORT 优化**: 在不需要回写 Java 数组的情况下，使用 `JNI_ABORT` 释放数组，减少内存复制开销。
 
-本项目包含两个主要模块：
+### 2. 灵活的构建风味 (Build Flavors)
+- **CPU/GPU 风味拆分**: 针对 TensorFlow Lite 推理拆分了 `cpu` 和 `gpu` 两个构建风味。
+  - `cpu` 版本：不包含 GPU Delegate 原生库，包体积更小。
+  - `gpu` 版本：包含全套 GPU 加速支持，性能更强。
+- **ABI 限制**: 默认仅针对 `arm64-v8a` 进行构建，大幅缩减 APK 体积。
 
-1. **app 模块**：TensorFlow Lite 图像分类演示应用（当前模块）
-   - 支持实时摄像头图像分类
-   - 支持从相册选择图片进行识别
-   - 支持多种预训练模型（MobileNet V1/V3、EfficientNet Lite0/1/2）
+### 3. 工程化与架构优化
+- **Version Catalog (libs.versions.toml)**: 全项目依赖统一由版本目录管理，确保依赖版本的一致性与可维护性。
+- **SDK & JVM 统一**: 全模块统一使用 `compileSdk 35`、`targetSdk 35` 和 `Java 17`，保持构建一致性。
+- **模块化设计**: 拆分为 `app`、`db`、`gyro`、`net`、`cifar10`、`nativecalc` 等多个功能模块，低耦合高复用。
 
-2. **migrate 模块**：ExecuTorch LLM 演示应用
-   - 基于 ExecuTorch 的大型语言模型（LLM）演示
-   - 支持多种 LLM 模型（Llama、Qwen、Gemma、Voxtral 等）
-   - 支持文本和视觉模型推理
-   - 详细使用说明请参考：[migrate/README.md](migrate/README.md)
+### 4. 传感器与数据采集 (gyro 模块)
+- **批量写入优化**: 陀螺仪数据采集使用缓冲区机制，每 20 条数据或 1 秒进行一次批量 Room 写入，极大降低数据库事务开销。
+- **协程生命周期管理**: 使用 `LaunchedEffect` 和 `DisposableEffect` 确保传感器监听与数据写入任务在组件销毁时正确释放。
 
-在应用主界面的 Demo 列表中，您可以点击"LLM Demo"项进入 migrate 模块的 LLM 演示功能。
+### 5. 增强型网络下载 (net 模块)
+- **多线程断点下载**: 支持并发下载，并自动探测服务器是否支持 `Range` 请求进行单/多线程切换。
+- **稳定性增强**: 增加超时设置、User-Agent 模拟、进度节流更新以及写入失败时的自动重试机制。
 
 ---
 
-## 图像分类功能
+## 项目模块说明
 
-该应用支持使用以下量化模型：
-- [MobileNet V1](https://tfhub.dev/tensorflow/lite-model/mobilenet_v1_1.0_224_quantized/1/metadata/1)
-- [EfficientNet Lite0](https://tfhub.dev/tensorflow/lite-model/efficientnet/lite0/int8/2)
-- [EfficientNet Lite1](https://tfhub.dev/tensorflow/lite-model/efficientnet/lite1/int8/2)
-- [EfficientNet Lite2](https://tfhub.dev/tensorflow/lite-model/efficientnet/lite2/int8/2)
-- [MobileNet V3](https://aihub.qualcomm.com/models/mobilenet_v3_small)
+1. **app 模块**：主应用入口，包含 TFLite 图像分类演示、JNI 性能对比等。
+2. **migrate 模块**：ExecuTorch LLM 演示应用，支持多种 Llama/Qwen 等模型推理。
+3. **nativecalc 模块**：高性能 JNI 计算库，提供 SIMD 优化的图像处理与数学运算。
+4. **db 模块**：基于 Room 的统一数据库访问层。
+5. **gyro 模块**：提供传感器数据采集与展示的 Compose 组件。
+6. **net 模块**：高性能、可扩展的多线程下载框架。
+7. **cifar10 模块**：基于 CIFAR-10 数据集的图像分类示例。
 
-这些模型均在 ImageNet (ILSVRC-2012-CLS) 数据集上训练完成。本说明将指导您在 Android 设备上构建和运行此演示应用。
+---
 
-模型文件会在您构建和运行应用时通过 Gradle 脚本自动下载，无需手动将 TFLite 模型下载到项目中。
+## 快速开始
 
-此应用程序需要在物理 Android 设备上运行。
+### 构建命令
+- **构建 CPU Release APK**: `.\gradlew.bat :app:assembleCpuRelease`
+- **构建 GPU Release APK**: `.\gradlew.bat :app:assembleGpuRelease`
+- **构建 Native SO 库**: `.\gradlew.bat :nativecalc:externalNativeBuildRelease`
 
-端侧识别APP
-tf_efficientnet_lite0.pth 可以官网下载
-TensorFlow Hub 上搜就行https://www.kaggle.com/models/timm/tf-efficientnet-lite
-EfficientNet-Lite0 图像分类示例
-使用预训练模型对图像进行分类
+### 环境要求
+- **Android Studio Koala+**
+- **JDK 17**
+- **Android NDK & CMake** (用于构建 nativecalc 模块)
 
-在官方的Demo基础上修改：
-1，增加汉化
-2, 不仅仅支持摄像头，还支持从相册里面识别图片，以及APP 自带几张图片。
+---
 
+## 功能对比与测试
 
-我来帮您分析 `info_bottom_sheet.xml` 文件中的参数对模型的意义。首先让我查看这个文件的内容。
+在应用主界面的 Demo 列表中，您可以找到：
+- **Image Flip**: 比较 Java Matrix 变换与 C++ NEON 优化版图片反转的耗时。
+- **Native Calc Benchmark**: 比较 Java 与 C++ JNI 的数值计算性能。
+- **Sensor Data**: 查看实时传感器曲线并记录数据到数据库。
+- **Network Download**: 体验带进度的多线程下载功能。
 
-Ran tool
-现在让我查看相关的字符串资源文件，以更好地理解这些参数的含义：
-
-Ran tool
-Ran tool
-让我查看一下相关的Kotlin代码，了解这些参数是如何被使用的：
-
-Ran tool
-现在让我查看 `ImageClassifierHelper.kt` 文件，了解这些参数是如何影响模型推理的：
-
-Ran tool
-基于对代码的分析，我现在可以详细解释 `info_bottom_sheet.xml` 文件中可控制参数对模型的意义：
-
-## `info_bottom_sheet.xml` 中可控制参数对模型的意义
-
-这个底部面板包含了几个关键的模型控制参数，每个参数都对图像分类模型的性能和结果产生直接影响：
-
-### 1. **推理时间 (Inference Time)**
-- **显示位置**: `inference_time_val` TextView
-- **作用**: 显示模型处理单张图片所需的时间（毫秒）
-- **对模型的意义**:
-    - 反映模型的推理性能
-    - 帮助用户了解不同设置下的速度表现
-    - 用于性能优化和对比
-
-### 2. **置信度阈值 (Confidence Threshold)**
-- **控制范围**: 0.1 - 0.9，步长 0.1
-- **默认值**: 0.50
-- **对模型的意义**:
-    - **过滤结果**: 只显示置信度高于阈值的分类结果
-    - **精度控制**: 阈值越高，结果越精确但可能遗漏低置信度的正确分类
-    - **召回率控制**: 阈值越低，能捕获更多结果但可能包含错误分类
-    - **用户体验**: 平衡准确性和完整性
-
-### 3. **最大结果数量 (Max Results)**
-- **控制范围**: 1-3
-- **默认值**: 3
-- **对模型的意义**:
-    - **输出限制**: 控制模型返回的分类结果数量
-    - **性能影响**: 减少结果数量可以略微提升推理速度
-    - **界面优化**: 避免界面显示过多结果造成混乱
-
-### 4. **线程数量 (Number of Threads)**
-- **控制范围**: 1-4（从代码看没有上限）
-- **默认值**: 2
-- **对模型的意义**:
-    - **并行处理**: 控制模型推理时使用的CPU线程数
-    - **性能平衡**: 更多线程可能提升速度，但也增加资源消耗
-    - **设备适配**: 根据设备性能调整最优线程数
-
-### 5. **推理代理 (Delegate)**
-- **选项**: CPU、GPU、NNAPI
-- **默认值**: CPU
-- **对模型的意义**:
-    - **硬件加速**: 选择不同的计算硬件执行推理
-    - **CPU**: 通用但较慢，兼容性最好
-    - **GPU**: 利用图形处理器加速，速度更快但功耗更高
-    - **NNAPI**: 使用Android Neural Networks API，利用专用AI芯片
-
-### 6. **模型选择 (ML Model)**
-- **选项**: MobileNet V1、EfficientNet Lite0/1/2
-- **默认值**: MobileNet V1
-- **对模型的意义**:
-    - **精度vs速度权衡**: 不同模型在准确性和推理速度间有不同的平衡
-    - **MobileNet V1**: 速度快，精度相对较低
-    - **EfficientNet系列**: 精度更高，但推理时间更长
-    - **资源消耗**: 不同模型的内存和计算需求不同
-
-### 参数间的相互影响
-
-这些参数之间存在复杂的相互影响关系：
-
-1. **线程数 × 代理类型**: GPU代理通常不需要多线程，而CPU代理可以受益于多线程
-2. **模型复杂度 × 硬件代理**: 复杂模型在GPU上性能提升更明显
-3. **阈值 × 最大结果数**: 高阈值配合少结果数可以快速获得高置信度分类
-4. **推理时间**: 是所有参数综合效果的最终体现
-
-这些控制参数让用户能够根据具体需求（速度优先 vs 精度优先）和应用场景（实时处理 vs 离线分析）来优化模型性能。
-
-1， 比较使用GPU加速和没使用GPU加速的区别
-2， 比较TFLite和PT Mobile区别
 
