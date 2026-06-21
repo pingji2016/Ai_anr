@@ -64,7 +64,6 @@ dependencies {
     implementation("com.facebook.soloader:soloader:0.10.5")
     implementation("com.facebook.fbjni:fbjni:0.5.1")
     implementation(project(":executorch"))
-    implementation("com.facebook.soloader:soloader:0.10.5")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -1,11 +1,9 @@
 package com.example.tfdemo.fragments
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -37,12 +35,11 @@ class DemoListFragment : Fragment() {
         demoAdapter = DemoAdapter { demoItem ->
             when (demoItem.id) {
                 1 -> navigateToImageClassification()
-                2 -> navigateToMigrateMainActivity()
-                3 -> navigateToCifar10MainActivity()
-                4 -> navigateToGyroMainActivity()
-                5 -> navigateToDownload()
-                6 -> navigateToNativeCalcBenchmark()
-                7 -> navigateToImageFlip()
+                2 -> navigateToCifar10MainActivity()
+                3 -> navigateToGyroMainActivity()
+                4 -> navigateToDownload()
+                5 -> navigateToNativeCalcBenchmark()
+                6 -> navigateToImageFlip()
                 // 可以添加更多demo的导航逻辑
             }
         }
@@ -57,35 +54,6 @@ class DemoListFragment : Fragment() {
 
     private fun navigateToImageClassification() {
         findNavController().navigate(R.id.actionDemoListToPermissions)
-    }
-
-    private fun navigateToMigrateMainActivity() {
-        try {
-            val intent = Intent().apply {
-                setClassName(
-                    "com.example.executorchllamademo",
-                    "com.example.executorchllamademo.MainActivity"
-                )
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-            startActivity(intent)
-        } catch (e: android.content.ActivityNotFoundException) {
-            // 如果无法找到Activity，显示错误提示
-            android.util.Log.e("DemoListFragment", "Failed to launch migrate MainActivity", e)
-            Toast.makeText(
-                requireContext(),
-                "无法启动 LLM Demo，请确保 migrate 模块已正确配置",
-                Toast.LENGTH_SHORT
-            ).show()
-        } catch (e: Exception) {
-            // 其他异常处理
-            android.util.Log.e("DemoListFragment", "Failed to launch migrate MainActivity", e)
-            Toast.makeText(
-                requireContext(),
-                "启动 LLM Demo 时发生错误: ${e.message}",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
     }
 
     private fun navigateToCifar10MainActivity() {
@@ -110,36 +78,30 @@ class DemoListFragment : Fragment() {
             ),
             DemoItem(
                 id = 2,
-                title = getString(R.string.migrate_demo_title),
-                description = getString(R.string.migrate_demo_description),
-                iconResId = android.R.drawable.ic_menu_edit
-            ),
-            DemoItem(
-                id = 3,
                 title = getString(R.string.cifar10_demo_title),
                 description = getString(R.string.cifar10_demo_description),
                 iconResId = android.R.drawable.ic_menu_manage
             ),
             DemoItem(
-                id = 4,
+                id = 3,
                 title = getString(R.string.gyro_demo_title),
                 description = getString(R.string.gyro_demo_description),
                 iconResId = android.R.drawable.ic_menu_compass
             ),
             DemoItem(
-                id = 5,
+                id = 4,
                 title = "Network Download",
                 description = "Multi-thread download demo",
                 iconResId = com.example.tfdemo.R.drawable.ic_download
             ),
             DemoItem(
-                id = 6,
+                id = 5,
                 title = "Native Calc Benchmark",
                 description = "Java VS C++ JNI performance",
                 iconResId = android.R.drawable.ic_menu_info_details
             ),
             DemoItem(
-                id = 7,
+                id = 6,
                 title = "Image Flip",
                 description = "Horizontal flip by C++ or Java",
                 iconResId = android.R.drawable.ic_menu_gallery
